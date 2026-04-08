@@ -501,52 +501,6 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formDishes')}</label>
-        <div className="flex flex-wrap gap-2 pt-1">
-          {DISH_TYPES.map((dish) => (
-            <button
-              key={dish.id}
-              type="button"
-              onClick={() => toggleDish(dish.id)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5",
-                formData.dishes.includes(dish.id)
-                  ? "bg-[#1D9E75] text-white border-[#1D9E75]"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75]"
-              )}
-            >
-              {formData.dishes.includes(dish.id) && <Check size={12} />}
-              {t(dish.label)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formPrice')}</label>
-          <input
-            required
-            type="number"
-            value={formData.price || ''}
-            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formSubmitter')}</label>
-          <input
-            type="text"
-            value={formData.submitter}
-            onChange={(e) => setFormData({ ...formData, submitter: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
-          />
-        </div>
-      </div>
-
-      {renderPhotoSection()}
-
-      <div className="space-y-1">
         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formDescription')}</label>
         <textarea
           maxLength={200}
@@ -555,6 +509,8 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none h-20 resize-none"
         />
       </div>
+
+      {renderPhotoSection()}
     </div>
   );
 
