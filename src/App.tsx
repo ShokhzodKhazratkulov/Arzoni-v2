@@ -302,6 +302,7 @@ export default function App() {
       const restaurantData = {
         name: restData.name,
         address: restData.address,
+        category: restData.category,
         dishes: restData.dishes,
         price: restData.price,
         photo_url: photoUrl,
@@ -524,7 +525,10 @@ export default function App() {
             setCustomDish={setCustomDish}
           />
 
-          <StatsBar restaurants={filteredRestaurants} />
+          <StatsBar 
+            restaurants={filteredRestaurants} 
+            selectedCategory={selectedCategory}
+          />
 
           <div className="p-4 max-w-7xl mx-auto w-full space-y-6">
             <MapContainer 

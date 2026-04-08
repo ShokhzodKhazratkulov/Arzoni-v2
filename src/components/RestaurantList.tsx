@@ -28,7 +28,7 @@ export default function RestaurantList({
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          {selectedCategory === 'food' ? t('totalRestaurants') : t('totalShops') || t('totalRestaurants')}
+          {selectedCategory === 'food' ? t('totalRestaurants') : t('totalShops')}
           <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full text-xs">
             {restaurants.length}
           </span>

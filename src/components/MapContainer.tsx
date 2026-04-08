@@ -177,7 +177,7 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
         <button
           onClick={handleFindMe}
           className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-all text-[#1D9E75] border border-gray-100"
-          title={t('findNearMe')}
+          title={selectedCategory === 'food' ? t('findNearMe') : t('findNearMeClothes')}
         >
           <Crosshair size={20} />
         </button>
@@ -188,7 +188,7 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
         className="absolute bottom-6 left-6 px-6 py-3 bg-[#1D9E75] text-white rounded-full shadow-xl hover:bg-[#168a65] transition-all font-bold flex items-center gap-2 scale-100 active:scale-95 z-10"
       >
         <span className="text-xl">+</span>
-        {t('addRestaurant')}
+        {selectedCategory === 'food' ? t('addRestaurant') : t('addShop')}
       </button>
 
       {selectedRestaurant && (

@@ -48,7 +48,7 @@ export default function FilterBar({
         <button
           onClick={() => setSelectedCategory('food')}
           className={cn(
-            "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold border transition-all",
+            "flex items-center gap-2 px-6 py-2 rounded-xl text-base font-bold border transition-all",
             selectedCategory === 'food'
               ? "bg-gray-900 text-white border-gray-900 shadow-lg"
               : "bg-white text-gray-600 border-gray-200 hover:border-gray-900"
@@ -60,7 +60,7 @@ export default function FilterBar({
         <button
           onClick={() => setSelectedCategory('clothes')}
           className={cn(
-            "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold border transition-all",
+            "flex items-center gap-2 px-6 py-2 rounded-xl text-base font-bold border transition-all",
             selectedCategory === 'clothes'
               ? "bg-gray-900 text-white border-gray-900 shadow-lg"
               : "bg-white text-gray-600 border-gray-200 hover:border-gray-900"
@@ -78,7 +78,7 @@ export default function FilterBar({
               key={item.id}
               onClick={() => toggleDish(item.id)}
               className={cn(
-                "whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition-all",
+                "whitespace-nowrap px-4 py-1.5 rounded-full text-base font-medium border transition-all",
                 selectedDishes.includes(item.id)
                   ? (selectedCategory === 'food' ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm" : "bg-indigo-500 text-white border-indigo-500 shadow-sm")
                   : "bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
@@ -97,7 +97,7 @@ export default function FilterBar({
               }
             }}
             className={cn(
-              "whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition-all",
+              "whitespace-nowrap px-4 py-1.5 rounded-full text-base font-medium border transition-all",
               selectedDishes.includes('custom')
                 ? (selectedCategory === 'food' ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm" : "bg-indigo-500 text-white border-indigo-500 shadow-sm")
                 : "bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
@@ -116,7 +116,7 @@ export default function FilterBar({
               value={customDish}
               onChange={(e) => setCustomDish(e.target.value)}
               placeholder={selectedCategory === 'food' ? t('customDishPlaceholder') : t('customDishPlaceholderClothes')}
-              className="w-full sm:w-64 px-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
+              className="w-full sm:w-64 px-4 py-2 text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
             />
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function FilterBar({
               key={range.id}
               onClick={() => setSelectedPriceRange(range.id)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold border transition-all",
+                "px-4 py-1.5 rounded-full text-sm font-bold border transition-all",
                 selectedPriceRange === range.id
                   ? "bg-orange-500 text-white border-orange-500 shadow-sm"
                   : "bg-white text-gray-600 border-gray-200 hover:border-orange-500 hover:text-orange-500"
@@ -147,9 +147,9 @@ export default function FilterBar({
               value={customPrice || ''}
               onChange={(e) => setCustomPrice(Number(e.target.value))}
               placeholder={t('formPrice')}
-              className="w-32 px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-32 px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
-            <span className="text-xs font-bold text-gray-500">{t('som')}</span>
+            <span className="text-sm font-bold text-gray-500">{t('som')}</span>
           </div>
         )}
       </div>

@@ -20,22 +20,20 @@ export default function Navbar() {
           <div className="flex flex-col">
             <div className="flex items-center">
               <div className="flex flex-col items-center mr-2 leading-none">
-                <span className="text-[8px] font-bold text-gray-900">{t('categoryFood')}</span>
-                <div className="w-full border-t border-gray-900 my-0.5" />
-                <span className="text-[8px] font-bold text-gray-900">{t('categoryClothes')}</span>
+                <span className="text-[10px] font-bold text-gray-900 leading-none">{t('categoryFood')}</span>
+                <div className="w-full border-t border-gray-900 my-px" />
+                <span className="text-[10px] font-bold text-gray-900 leading-none">{t('categoryClothes')}</span>
               </div>
               <h1 className="text-2xl font-black text-gray-900 leading-none tracking-tighter">
                 {t('appName')}
               </h1>
             </div>
             {/* Tagline */}
-            <div className="flex items-center gap-1 text-[10px] text-gray-500 font-medium mt-0.5">
+            <div className="flex items-center gap-1 text-xs text-gray-500 font-medium mt-0.5">
               <span className="whitespace-nowrap">{t('taglinePart1')}</span>
-              <div className="flex flex-col items-center leading-none px-0.5">
-                <span className="text-[7px] font-bold">{t('foodItem')}</span>
-                <div className="w-full border-t border-gray-300 my-0.5" />
-                <span className="text-[7px] font-bold">{t('clothesItem')}</span>
-              </div>
+              <span className="font-bold text-gray-700">
+                {t('foodItem')}/{t('clothesItem')}
+              </span>
               <span className="whitespace-nowrap">{t('taglinePart2')}</span>
             </div>
           </div>
@@ -43,13 +41,13 @@ export default function Navbar() {
 
         {/* Language Selector - Right aligned */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="hidden sm:block text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          <div className="hidden sm:block text-xs font-bold text-gray-400 uppercase tracking-widest">
             {t('communityMap') || "Community Map"}
           </div>
           <div className="flex items-center gap-1 bg-gray-50 p-0.5 rounded-full border border-gray-200">
             <button
               onClick={() => changeLanguage('uz')}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                 i18n.language === 'uz' ? 'bg-white text-[#1D9E75] shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -57,7 +55,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => changeLanguage('ru')}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                 i18n.language === 'ru' ? 'bg-white text-[#1D9E75] shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -65,7 +63,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => changeLanguage('en')}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                 i18n.language === 'en' ? 'bg-white text-[#1D9E75] shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >

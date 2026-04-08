@@ -47,15 +47,26 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
   const apiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY || '';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const themeColor = selectedCategory === 'food' ? '#1D9E75' : '#6366F1';
-  const themeBg = selectedCategory === 'food' ? 'bg-[#1D9E75]' : 'bg-indigo-500';
-  const themeText = selectedCategory === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
-  const themeBorder = selectedCategory === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
-  const themeRing = selectedCategory === 'food' ? 'focus:ring-[#1D9E75]' : 'focus:ring-indigo-500';
-  const themeHover = selectedCategory === 'food' ? 'hover:bg-[#168a65]' : 'hover:bg-indigo-600';
-  const themeBgLight = selectedCategory === 'food' ? 'bg-[#1D9E75]/5' : 'bg-indigo-500/5';
-  const themeBorderDashed = selectedCategory === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
-  const themeTextLight = selectedCategory === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    dishes: [] as string[],
+    price: 0,
+    description: '',
+    submitter: '',
+    location: TASHKENT_CENTER,
+    category: selectedCategory
+  });
+
+  const themeColor = formData.category === 'food' ? '#1D9E75' : '#6366F1';
+  const themeBg = formData.category === 'food' ? 'bg-[#1D9E75]' : 'bg-indigo-500';
+  const themeText = formData.category === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
+  const themeBorder = formData.category === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
+  const themeRing = formData.category === 'food' ? 'focus:ring-[#1D9E75]' : 'focus:ring-indigo-500';
+  const themeHover = formData.category === 'food' ? 'hover:bg-[#168a65]' : 'hover:bg-indigo-600';
+  const themeBgLight = formData.category === 'food' ? 'bg-[#1D9E75]/5' : 'bg-indigo-500/5';
+  const themeBorderDashed = formData.category === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
+  const themeTextLight = formData.category === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
   
   const [mode, setMode] = useState<'search' | 'add' | 'review'>('search');
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,16 +78,6 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
   const [localError, setLocalError] = useState<string | null>(null);
 
   const mapRef = useRef<google.maps.Map | null>(null);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-    dishes: [] as string[],
-    price: 0,
-    description: '',
-    submitter: '',
-    location: TASHKENT_CENTER
-  });
 
   const [reviewData, setReviewData] = useState({
     rating: 5,
@@ -109,7 +110,8 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
         price: 0,
         description: '',
         submitter: '',
-        location: TASHKENT_CENTER
+        location: TASHKENT_CENTER,
+        category: selectedCategory
       });
       setReviewData({
         rating: 5,
@@ -243,7 +245,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
     <div className="space-y-4">
       <div className="space-y-1">
         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-          {selectedCategory === 'food' ? t('formName') : t('formNameClothes')}
+          {formData.category === 'food' ? t('formName') : t('formNameClothes')}
         </label>
         <div className="relative">
           <input
@@ -252,7 +254,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
-            placeholder={selectedCategory === 'food' ? t('searchRestaurantPlaceholder') : t('searchShopPlaceholder') || t('searchRestaurantPlaceholder')}
+            placeholder={formData.category === 'food' ? t('searchRestaurantPlaceholder') : t('searchShopPlaceholder')}
           />
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           {isSearching && (
@@ -269,7 +271,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             className="space-y-2"
           >
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
-              {t('existingRestaurants') || "Existing Restaurants"}
+              {selectedCategory === 'food' ? t('existingRestaurants') : t('existingShops')}
             </p>
             <div className="space-y-2">
               {suggestions.map((r) => (
@@ -311,9 +313,9 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           </div>
           <div className="text-left">
             <p className="font-bold">
-              {selectedCategory === 'food' ? t('addNewRestaurant') : t('addNewShop') || t('addNewRestaurant')}
+              {selectedCategory === 'food' ? t('addNewRestaurant') : t('addNewShop')}
             </p>
-            <p className="text-xs opacity-70">"{searchTerm}" {t('notInList') || "is not in our list yet"}</p>
+            <p className="text-xs opacity-70">"{searchTerm}" {t('notInList')}</p>
           </div>
         </button>
       )}
@@ -485,9 +487,39 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
 
   const renderAdd = () => (
     <div className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('category') || "Category"}</label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, category: 'food' })}
+            className={cn(
+              "flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all",
+              formData.category === 'food' 
+                ? "bg-[#1D9E75] border-[#1D9E75] text-white shadow-md" 
+                : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+            )}
+          >
+            {t('categoryFood')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, category: 'clothes' })}
+            className={cn(
+              "flex-1 py-3 rounded-xl font-bold text-sm border-2 transition-all",
+              formData.category === 'clothes' 
+                ? "bg-indigo-500 border-indigo-500 text-white shadow-md" 
+                : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+            )}
+          >
+            {t('categoryClothes')}
+          </button>
+        </div>
+      </div>
+
       <div className="space-y-1">
         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-          {selectedCategory === 'food' ? t('formName') : t('formNameClothes')}
+          {formData.category === 'food' ? t('formName') : t('formNameClothes')}
         </label>
         <input
           required
@@ -538,10 +570,57 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             type="button"
             onClick={handleRecenter}
             className={`absolute top-4 right-4 p-2 bg-white rounded-full shadow-lg border border-gray-200 ${themeText} hover:bg-gray-50 transition-all z-10`}
-            title={selectedCategory === 'food' ? t('findNearMe') : t('findNearMeClothes')}
+            title={formData.category === 'food' ? t('findNearMe') : t('findNearMeClothes')}
           >
             <MapPin size={20} />
           </button>
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          {formData.category === 'food' ? t('formDishes') : t('formDishesClothes')}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {(formData.category === 'food' ? DISH_TYPES : CLOTHING_TYPES).map((dish) => (
+            <button
+              key={dish.id}
+              type="button"
+              onClick={() => toggleDish(dish.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2",
+                formData.dishes.includes(dish.id)
+                  ? `${formData.category === 'food' ? 'bg-[#1D9E75] border-[#1D9E75]' : 'bg-indigo-500 border-indigo-500'} text-white shadow-sm`
+                  : "bg-white border-gray-100 text-gray-500 hover:border-gray-200"
+              )}
+            >
+              {t(dish.label)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formPrice')}</label>
+          <input
+            required
+            type="number"
+            min="0"
+            value={formData.price || ''}
+            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+            className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
+            placeholder="0"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formSubmitter')}</label>
+          <input
+            type="text"
+            value={formData.submitter}
+            onChange={(e) => setFormData({ ...formData, submitter: e.target.value })}
+            className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
+          />
         </div>
       </div>
 
@@ -571,9 +650,9 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           >
             <div className={`p-6 border-b border-gray-100 flex justify-between items-center ${themeBg} text-white`}>
               <h2 className="text-xl font-bold">
-                {mode === 'search' ? (selectedCategory === 'food' ? t('addRestaurant') : t('addShop') || t('addRestaurant')) : 
-                 mode === 'review' ? t('addReview') || "Add Review" : 
-                 (selectedCategory === 'food' ? t('addNewRestaurant') : t('addNewShop') || t('addNewRestaurant'))}
+                {mode === 'search' ? (formData.category === 'food' ? t('addRestaurant') : t('addShop')) : 
+                 mode === 'review' ? t('addReview') : 
+                 (formData.category === 'food' ? t('addNewRestaurant') : t('addNewShop'))}
               </h2>
               <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-all">
                 <X size={24} />

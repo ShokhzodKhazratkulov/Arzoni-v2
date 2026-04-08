@@ -164,7 +164,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-              {isReview ? "Most liked review" : t('about')}
+              {isReview ? t('mostLikedReview') : t('about')}
             </span>
           </div>
           <p className={`text-gray-600 text-xs line-clamp-2 leading-relaxed italic ${isReview ? `${themeText} border-l-2 ${themeBorderLight} pl-2` : ''}`}>
@@ -185,7 +185,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
               <span className="text-[10px] text-gray-400 font-bold">
                 {restaurant.reviewCount}
               </span>
-              <span className="text-[8px] text-gray-300 uppercase font-black leading-none">reviews</span>
+              <span className="text-[8px] text-gray-300 uppercase font-black leading-none">{t('reviewsCount')}</span>
             </div>
             
             {popularityPercent !== null && (
@@ -203,7 +203,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             className={`flex flex-col items-center gap-0.5 ${themeText} hover:opacity-80 transition-opacity`}
           >
             <Navigation size={14} className={selectedCategory === 'food' ? "fill-[#1D9E75]/10" : "fill-indigo-500/10"} />
-            <span className="text-[9px] font-black uppercase leading-none text-center">Yo'nalish<br/>olish</span>
+            <span className="text-[9px] font-black uppercase leading-none text-center">{t('getDirections')}</span>
           </a>
         </div>
       </motion.div>
