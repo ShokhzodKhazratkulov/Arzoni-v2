@@ -1,8 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { DISH_TYPES, PRICE_RANGES } from '../constants';
+import { DISH_TYPES, CLOTHING_TYPES, PRICE_RANGES, CLOTHING_PRICE_RANGES } from '../constants';
 import { cn } from '../lib/utils';
+import { Utensils, Shirt } from 'lucide-react';
 
 interface FilterBarProps {
+  selectedCategory: 'food' | 'clothes';
+  setSelectedCategory: (category: 'food' | 'clothes') => void;
   selectedDishes: string[];
   setSelectedDishes: (dishes: string[]) => void;
   selectedPriceRange: string;
@@ -14,6 +17,8 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({
+  selectedCategory,
+  setSelectedCategory,
   selectedDishes,
   setSelectedDishes,
   selectedPriceRange,
@@ -33,22 +38,53 @@ export default function FilterBar({
     }
   };
 
+  const currentItems = selectedCategory === 'food' ? DISH_TYPES : CLOTHING_TYPES;
+  const currentPriceRanges = selectedCategory === 'food' ? PRICE_RANGES : CLOTHING_PRICE_RANGES;
+
   return (
     <div className="bg-white border-b border-gray-100 px-4 py-4 space-y-4">
+      {/* Category Switcher */}
+      <div className="max-w-7xl mx-auto flex gap-3">
+        <button
+          onClick={() => setSelectedCategory('food')}
+          className={cn(
+            "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold border transition-all",
+            selectedCategory === 'food'
+              ? "bg-gray-900 text-white border-gray-900 shadow-lg"
+              : "bg-white text-gray-600 border-gray-200 hover:border-gray-900"
+          )}
+        >
+          <Utensils size={18} />
+          {t('categoryFood')}
+        </button>
+        <button
+          onClick={() => setSelectedCategory('clothes')}
+          className={cn(
+            "flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold border transition-all",
+            selectedCategory === 'clothes'
+              ? "bg-gray-900 text-white border-gray-900 shadow-lg"
+              : "bg-white text-gray-600 border-gray-200 hover:border-gray-900"
+          )}
+        >
+          <Shirt size={18} />
+          {t('categoryClothes')}
+        </button>
+      </div>
+
       <div className="max-w-7xl mx-auto overflow-x-auto no-scrollbar">
         <div className="flex gap-2 pb-1">
-          {DISH_TYPES.map((dish) => (
+          {currentItems.map((item) => (
             <button
-              key={dish.id}
-              onClick={() => toggleDish(dish.id)}
+              key={item.id}
+              onClick={() => toggleDish(item.id)}
               className={cn(
                 "whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition-all",
-                selectedDishes.includes(dish.id)
-                  ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm"
+                selectedDishes.includes(item.id)
+                  ? (selectedCategory === 'food' ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm" : "bg-indigo-500 text-white border-indigo-500 shadow-sm")
                   : "bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
               )}
             >
-              {t(dish.label)}
+              {t(item.label)}
             </button>
           ))}
           <button
@@ -63,11 +99,11 @@ export default function FilterBar({
             className={cn(
               "whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition-all",
               selectedDishes.includes('custom')
-                ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm"
+                ? (selectedCategory === 'food' ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm" : "bg-indigo-500 text-white border-indigo-500 shadow-sm")
                 : "bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
             )}
           >
-            {t('customDish')}
+            {selectedCategory === 'food' ? t('customDish') : t('otherDishClothes')}
           </button>
         </div>
       </div>
@@ -79,7 +115,7 @@ export default function FilterBar({
               type="text"
               value={customDish}
               onChange={(e) => setCustomDish(e.target.value)}
-              placeholder={t('customDishPlaceholder')}
+              placeholder={selectedCategory === 'food' ? t('customDishPlaceholder') : t('customDishPlaceholderClothes')}
               className="w-full sm:w-64 px-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
             />
           </div>
@@ -88,7 +124,7 @@ export default function FilterBar({
 
       <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap gap-2">
-          {PRICE_RANGES.map((range) => (
+          {currentPriceRanges.map((range) => (
             <button
               key={range.id}
               onClick={() => setSelectedPriceRange(range.id)}

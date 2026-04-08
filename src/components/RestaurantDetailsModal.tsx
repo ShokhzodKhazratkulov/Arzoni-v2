@@ -4,7 +4,7 @@ import { X, Star, MapPin, Navigation, User, ThumbsUp, ThumbsDown, MoreVertical, 
 import { motion, AnimatePresence } from 'motion/react';
 import { Restaurant, Review } from '../types';
 import { supabase } from '../supabase';
-import { DISH_TYPES } from '../constants';
+import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import imageCompression from 'browser-image-compression';
 
 enum OperationType {
@@ -39,9 +39,18 @@ interface RestaurantDetailsModalProps {
   onAddReview?: () => void;
   selectedDishes?: string[];
   customDish?: string;
+  selectedCategory: 'food' | 'clothes';
 }
 
-export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: initialRestaurant, onAddReview, selectedDishes = [], customDish }: RestaurantDetailsModalProps) {
+export default function RestaurantDetailsModal({ 
+  isOpen, 
+  onClose, 
+  restaurant: initialRestaurant, 
+  onAddReview, 
+  selectedDishes = [], 
+  customDish,
+  selectedCategory
+}: RestaurantDetailsModalProps) {
   const { t } = useTranslation();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +60,15 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
   const [newName, setNewName] = useState(initialRestaurant.name);
   const [isUpdating, setIsUpdating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const themeColor = selectedCategory === 'food' ? '#1D9E75' : '#6366F1';
+  const themeBg = selectedCategory === 'food' ? 'bg-[#1D9E75]' : 'bg-indigo-500';
+  const themeText = selectedCategory === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
+  const themeBorder = selectedCategory === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
+  const themeBorderLight = selectedCategory === 'food' ? 'border-[#1D9E75]/20' : 'border-indigo-500/20';
+  const themeBgLight = selectedCategory === 'food' ? 'bg-[#1D9E75]/10' : 'bg-indigo-500/10';
+  const themeHover = selectedCategory === 'food' ? 'hover:bg-[#168a65]' : 'hover:bg-indigo-600';
+  const themeShadow = selectedCategory === 'food' ? 'shadow-[#1D9E75]/20' : 'shadow-indigo-500/20';
 
   // Sync local restaurant state with prop when it changes
   useEffect(() => {
@@ -337,7 +355,7 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                           }}
                           className="w-full px-4 py-3 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                         >
-                          <Edit2 size={14} className="text-[#1D9E75]" />
+                          <Edit2 size={14} className={themeText} />
                           Edit name
                         </button>
                         <button 
@@ -347,7 +365,7 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                           }}
                           className="w-full px-4 py-3 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors border-t border-gray-50"
                         >
-                          <Camera size={14} className="text-[#1D9E75]" />
+                          <Camera size={14} className={themeText} />
                           Edit photo
                         </button>
                       </motion.div>
@@ -410,7 +428,7 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                     : restaurant.price).toLocaleString()} {t('som')}
                 </p>
                 {restaurant.avgPrice && Math.round(restaurant.avgPrice) !== Math.round(restaurant.price) && (
-                  <p className="text-[9px] text-[#1D9E75] font-bold mt-0.5">
+                  <p className={`text-[9px] ${themeText} font-bold mt-0.5`}>
                     Avg: {Math.round(restaurant.avgPrice).toLocaleString()}
                   </p>
                 )}
@@ -450,10 +468,13 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
 
             {/* Dishes */}
             <div>
-              <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">{t('popularDishes')}</h3>
+              <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">
+                {selectedCategory === 'food' ? t('popularDishes') : t('popularDishesClothes')}
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {restaurant.dishes.map(dishId => {
-                  const dish = DISH_TYPES.find(d => d.id === dishId);
+                  const currentTypes = selectedCategory === 'food' ? DISH_TYPES : CLOTHING_TYPES;
+                  const dish = currentTypes.find(d => d.id === dishId);
                   const isSelected = selectedDishes.includes(dishId) || 
                     (selectedDishes.includes('custom') && customDish && dishId.toLowerCase() === customDish.toLowerCase());
                   
@@ -462,8 +483,8 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                       key={dishId} 
                       className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                         isSelected 
-                          ? "bg-[#1D9E75] text-white shadow-sm" 
-                          : "bg-[#1D9E75]/10 text-[#1D9E75]"
+                          ? `${themeBg} text-white shadow-sm` 
+                          : `${themeBgLight} ${themeText}`
                       }`}
                     >
                       {dish ? t(dish.label) : (restaurant.dishStats?.[dishId]?.displayName || dishId)}
@@ -478,14 +499,14 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">{t('communityReviews')}</h3>
-                  <div className="flex items-center gap-1 text-[#1D9E75] text-sm font-bold mt-1">
-                    <Star size={16} className="fill-[#1D9E75]" />
+                  <div className={`flex items-center gap-1 ${themeText} text-sm font-bold mt-1`}>
+                    <Star size={16} className={`fill-[${themeColor}]`} />
                     <span>{restaurant.rating.toFixed(1)} / 5</span>
                   </div>
                 </div>
                 <button
                   onClick={() => onAddReview?.()}
-                  className="bg-[#1D9E75] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-[#168a65] transition-all flex items-center gap-2"
+                  className={`${themeBg} text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md ${themeHover} transition-all flex items-center gap-2`}
                 >
                   <Star size={14} className="fill-white" />
                   {t('addReview')}
@@ -494,7 +515,7 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
 
               {loading ? (
                 <div className="flex justify-center py-12">
-                  <div className="w-8 h-8 border-4 border-[#1D9E75] border-t-transparent rounded-full animate-spin" />
+                  <div className={`w-8 h-8 border-4 ${themeBorder} border-t-transparent rounded-full animate-spin`} />
                 </div>
               ) : reviews.length > 0 ? (
                 <div className="space-y-6">
@@ -519,10 +540,12 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                               {review.dishId && (
                                 <>
                                   {' • '}
-                                  <span className="text-[#1D9E75] font-bold">
-                                    {DISH_TYPES.find(d => d.id === review.dishId) 
-                                      ? t(DISH_TYPES.find(d => d.id === review.dishId)!.label) 
-                                      : (restaurant.dishStats?.[review.dishId.toLowerCase()]?.displayName || review.dishId)}
+                                  <span className={`${themeText} font-bold`}>
+                                    {(() => {
+                                      const currentTypes = selectedCategory === 'food' ? DISH_TYPES : CLOTHING_TYPES;
+                                      const found = currentTypes.find(d => d.id === review.dishId);
+                                      return found ? t(found.label) : (restaurant.dishStats?.[review.dishId.toLowerCase()]?.displayName || review.dishId);
+                                    })()}
                                   </span>
                                 </>
                               )}
@@ -583,7 +606,7 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
               href={`https://www.google.com/maps/dir/?api=1&destination=${restaurant.location.lat},${restaurant.location.lng}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#1D9E75] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-[#1D9E75]/20 hover:scale-105 transition-transform"
+              className={`flex items-center gap-2 ${themeBg} text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg ${themeShadow} hover:scale-105 transition-transform`}
             >
               <Navigation size={16} />
               {t('getDirections')}

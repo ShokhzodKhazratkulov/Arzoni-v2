@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Star, MapPin, Navigation, Info } from 'lucide-react';
 import { Restaurant } from '../types';
-import { DISH_TYPES } from '../constants';
+import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import { motion } from 'motion/react';
 import RestaurantDetailsModal from './RestaurantDetailsModal';
 
@@ -12,17 +12,30 @@ interface RestaurantCardProps {
   key?: string;
   selectedDishes?: string[];
   customDish?: string;
+  selectedCategory: 'food' | 'clothes';
 }
 
-export default function RestaurantCard({ restaurant, onAddReview, selectedDishes = [], customDish }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant, onAddReview, selectedDishes = [], customDish, selectedCategory }: RestaurantCardProps) {
   const { t } = useTranslation();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const getPriceColor = (price: number) => {
-    if (price <= 30000) return 'text-green-600 bg-green-50 border-green-100';
-    if (price <= 45000) return 'text-orange-600 bg-orange-50 border-orange-100';
+    if (selectedCategory === 'clothes') {
+      if (price <= 50000) return 'text-indigo-600 bg-indigo-50 border-indigo-100';
+      if (price <= 100000) return 'text-violet-600 bg-violet-50 border-violet-100';
+      return 'text-purple-600 bg-purple-50 border-purple-100';
+    }
+    if (price <= 25000) return 'text-green-600 bg-green-50 border-green-100';
+    if (price <= 35000) return 'text-orange-600 bg-orange-50 border-orange-100';
     return 'text-red-600 bg-red-50 border-red-100';
   };
+
+  const themeColor = selectedCategory === 'food' ? '#1D9E75' : '#6366F1';
+  const themeBg = selectedCategory === 'food' ? 'bg-[#1D9E75]' : 'bg-indigo-500';
+  const themeText = selectedCategory === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
+  const themeBorder = selectedCategory === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
+  const themeBorderLight = selectedCategory === 'food' ? 'border-[#1D9E75]/20' : 'border-indigo-500/20';
+  const themeBgLight = selectedCategory === 'food' ? 'bg-[#1D9E75]/10' : 'bg-indigo-500/10';
 
   // Find the most relevant dish to display info for
   const activeDishId = useMemo(() => {
@@ -112,12 +125,12 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             <h3 
               id="restaurant-name"
               onClick={() => setIsDetailsOpen(true)}
-              className="font-black text-gray-900 text-xl leading-tight cursor-pointer hover:text-[#1D9E75] transition-colors inline-block tracking-tight"
+              className={`font-black text-gray-900 text-xl leading-tight cursor-pointer hover:${themeText} transition-colors inline-block tracking-tight`}
             >
               {restaurant.name}
             </h3>
             <div className="flex items-center gap-1.5 text-gray-400 text-xs mt-1.5 font-medium">
-              <MapPin size={12} className="text-[#1D9E75]" />
+              <MapPin size={12} className={themeText} />
               <span className="line-clamp-1">{restaurant.address}</span>
             </div>
           </div>
@@ -127,7 +140,8 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
         </div>
         <div className="flex flex-wrap gap-1.5">
           {restaurant.dishes.map(dishId => {
-            const dish = DISH_TYPES.find(d => d.id === dishId);
+            const currentTypes = selectedCategory === 'food' ? DISH_TYPES : CLOTHING_TYPES;
+            const dish = currentTypes.find(d => d.id === dishId);
             // Highlight if exact match with dishId OR if it's a custom dish and matches activeDishId (case-insensitive)
             const isSelected = selectedDishes.includes(dishId) || 
               (selectedDishes.includes('custom') && customDish && dishId.toLowerCase() === customDish.toLowerCase());
@@ -137,7 +151,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
                 key={dishId} 
                 className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${
                   isSelected 
-                    ? "bg-[#1D9E75] text-white" 
+                    ? `${themeBg} text-white` 
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
@@ -153,7 +167,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
               {isReview ? "Most liked review" : t('about')}
             </span>
           </div>
-          <p className={`text-gray-600 text-xs line-clamp-2 leading-relaxed italic ${isReview ? 'text-[#1D9E75] border-l-2 border-[#1D9E75]/20 pl-2' : ''}`}>
+          <p className={`text-gray-600 text-xs line-clamp-2 leading-relaxed italic ${isReview ? `${themeText} border-l-2 ${themeBorderLight} pl-2` : ''}`}>
             {displayDescription}
           </p>
         </div>
@@ -175,7 +189,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             </div>
             
             {popularityPercent !== null && (
-               <div className="bg-[#1D9E75]/10 text-[#1D9E75] px-2 py-1 rounded-lg flex flex-col items-start leading-tight border border-[#1D9E75]/20">
+               <div className={`${themeBgLight} ${themeText} px-2 py-1 rounded-lg flex flex-col items-start leading-tight border ${themeBorderLight}`}>
                  <span className="text-[8px] font-black uppercase tracking-tighter">{t('popularity')}:</span>
                  <span className="text-xs font-black">{popularityPercent}%</span>
                </div>
@@ -186,9 +200,9 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             href={`https://www.google.com/maps/dir/?api=1&destination=${restaurant.location.lat},${restaurant.location.lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-0.5 text-[#1D9E75] hover:opacity-80 transition-opacity"
+            className={`flex flex-col items-center gap-0.5 ${themeText} hover:opacity-80 transition-opacity`}
           >
-            <Navigation size={14} className="fill-[#1D9E75]/10" />
+            <Navigation size={14} className={selectedCategory === 'food' ? "fill-[#1D9E75]/10" : "fill-indigo-500/10"} />
             <span className="text-[9px] font-black uppercase leading-none text-center">Yo'nalish<br/>olish</span>
           </a>
         </div>
@@ -200,6 +214,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
         restaurant={restaurant}
         onAddReview={onAddReview}
         selectedDishes={selectedDishes}
+        selectedCategory={selectedCategory}
       />
     </>
   );

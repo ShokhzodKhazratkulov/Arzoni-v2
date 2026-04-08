@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Check, MapPin, Camera, Star, Search, Loader2, AlertTriangle } from 'lucide-react';
-import { DISH_TYPES, TASHKENT_CENTER } from '../constants';
+import { DISH_TYPES, CLOTHING_TYPES, TASHKENT_CENTER } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
@@ -39,12 +39,23 @@ interface AddRestaurantModalProps {
   onSubmit: (data: any) => void;
   onAddReview: (restaurantId: string, reviewData: any) => void;
   initialRestaurant?: Restaurant | null;
+  selectedCategory: 'food' | 'clothes';
 }
 
-export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddReview, initialRestaurant }: AddRestaurantModalProps) {
+export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddReview, initialRestaurant, selectedCategory }: AddRestaurantModalProps) {
   const { t } = useTranslation();
   const apiKey = (import.meta as any).env.VITE_GOOGLE_MAPS_API_KEY || '';
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const themeColor = selectedCategory === 'food' ? '#1D9E75' : '#6366F1';
+  const themeBg = selectedCategory === 'food' ? 'bg-[#1D9E75]' : 'bg-indigo-500';
+  const themeText = selectedCategory === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
+  const themeBorder = selectedCategory === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
+  const themeRing = selectedCategory === 'food' ? 'focus:ring-[#1D9E75]' : 'focus:ring-indigo-500';
+  const themeHover = selectedCategory === 'food' ? 'hover:bg-[#168a65]' : 'hover:bg-indigo-600';
+  const themeBgLight = selectedCategory === 'food' ? 'bg-[#1D9E75]/5' : 'bg-indigo-500/5';
+  const themeBorderDashed = selectedCategory === 'food' ? 'border-[#1D9E75]' : 'border-indigo-500';
+  const themeTextLight = selectedCategory === 'food' ? 'text-[#1D9E75]' : 'text-indigo-500';
   
   const [mode, setMode] = useState<'search' | 'add' | 'review'>('search');
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,10 +131,11 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
 
       setIsSearching(true);
       try {
-        // Supabase search using ilike
+        // Supabase search using ilike and category
         const { data, error } = await supabase
           .from('restaurants')
           .select('*')
+          .eq('category', selectedCategory)
           .ilike('name', `%${searchTerm}%`)
           .limit(5);
 
@@ -213,6 +225,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
     } else {
       onSubmit({
         ...formData,
+        category: selectedCategory,
         name: formData.name || searchTerm,
         rating: 0,
         reviewCount: 0,
@@ -229,19 +242,21 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
   const renderSearch = () => (
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formName')}</label>
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          {selectedCategory === 'food' ? t('formName') : t('formNameClothes')}
+        </label>
         <div className="relative">
           <input
             autoFocus
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
-            placeholder={t('searchRestaurantPlaceholder') || "Start typing restaurant name..."}
+            className={`w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
+            placeholder={selectedCategory === 'food' ? t('searchRestaurantPlaceholder') : t('searchShopPlaceholder') || t('searchRestaurantPlaceholder')}
           />
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           {isSearching && (
-            <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1D9E75] animate-spin" size={18} />
+            <Loader2 className={`absolute right-4 top-1/2 -translate-y-1/2 ${themeText} animate-spin`} size={18} />
           )}
         </div>
       </div>
@@ -271,8 +286,8 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
                     <h4 className="font-bold text-gray-900">{r.name}</h4>
                     <p className="text-xs text-gray-500">{r.address}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-[#1D9E75] font-bold text-sm">
-                    <Star size={14} className="fill-[#1D9E75]" />
+                  <div className={`flex items-center gap-1 ${themeText} font-bold text-sm`}>
+                    <Star size={14} className={`fill-[${themeColor}]`} />
                     {r.rating.toFixed(1)}
                   </div>
                 </button>
@@ -289,13 +304,15 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             setFormData({ ...formData, name: searchTerm });
             setMode('add');
           }}
-          className="w-full p-4 flex items-center gap-3 bg-[#1D9E75]/5 text-[#1D9E75] rounded-xl border border-dashed border-[#1D9E75] hover:bg-[#1D9E75]/10 transition-all"
+          className={`w-full p-4 flex items-center gap-3 ${themeBgLight} ${themeTextLight} rounded-xl border border-dashed ${themeBorderDashed} hover:bg-opacity-10 transition-all`}
         >
-          <div className="w-10 h-10 rounded-full bg-[#1D9E75] text-white flex items-center justify-center font-bold text-xl">
+          <div className={`w-10 h-10 rounded-full ${themeBg} text-white flex items-center justify-center font-bold text-xl`}>
             +
           </div>
           <div className="text-left">
-            <p className="font-bold">{t('addNewRestaurant') || "Add as a new restaurant"}</p>
+            <p className="font-bold">
+              {selectedCategory === 'food' ? t('addNewRestaurant') : t('addNewShop') || t('addNewRestaurant')}
+            </p>
             <p className="text-xs opacity-70">"{searchTerm}" {t('notInList') || "is not in our list yet"}</p>
           </div>
         </button>
@@ -313,7 +330,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
         <button 
           type="button"
           onClick={() => setMode('search')}
-          className="text-xs font-bold text-[#1D9E75] hover:underline"
+          className={`text-xs font-bold ${themeText} hover:underline`}
         >
           {t('change') || "Change"}
         </button>
@@ -342,32 +359,38 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('whatDidYouEat') || "What did you eat?"}</label>
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          {selectedCategory === 'food' ? t('whatDidYouEat') : t('whatDidYouBuy')}
+        </label>
         <select
           value={reviewData.dishId}
           onChange={(e) => setReviewData({ ...reviewData, dishId: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none bg-white"
+          className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none bg-white`}
         >
-          <option value="">{t('selectDish') || "Select a dish..."}</option>
-          {DISH_TYPES.map((dish) => (
-            <option key={dish.id} value={dish.id}>
-              {t(dish.label)}
+          <option value="">
+            {selectedCategory === 'food' ? t('selectDish') : t('selectDishClothes')}
+          </option>
+          {(selectedCategory === 'food' ? DISH_TYPES : CLOTHING_TYPES).map((item) => (
+            <option key={item.id} value={item.id}>
+              {t(item.label)}
             </option>
           ))}
-          <option value="other">{t('otherDish')}</option>
+          <option value="other">{selectedCategory === 'food' ? t('otherDish') : t('otherDishClothes')}</option>
         </select>
       </div>
 
       {reviewData.dishId === 'other' && (
         <div className="space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customDish')}</label>
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            {selectedCategory === 'food' ? t('customDish') : t('customDishClothes') || t('customDish')}
+          </label>
           <input
             required
             type="text"
             value={reviewData.customDishName}
             onChange={(e) => setReviewData({ ...reviewData, customDishName: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
-            placeholder={t('customDishPlaceholder')}
+            className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
+            placeholder={selectedCategory === 'food' ? t('customDishPlaceholder') : t('customDishPlaceholderClothes')}
           />
         </div>
       )}
@@ -378,7 +401,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           required
           value={reviewData.comment}
           onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none h-24 resize-none"
+          className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none h-24 resize-none`}
           placeholder={t('commentPlaceholder') || "Tell us about your experience..."}
         />
       </div>
@@ -391,7 +414,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             type="text"
             value={reviewData.submitter}
             onChange={(e) => setReviewData({ ...reviewData, submitter: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
+            className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
           />
         </div>
         <div className="space-y-1">
@@ -402,7 +425,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             min="0"
             value={reviewData.priceSpent || ''}
             onChange={(e) => setReviewData({ ...reviewData, priceSpent: Number(e.target.value) })}
-            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
+            className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
             placeholder="0"
           />
         </div>
@@ -437,7 +460,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-[#1D9E75] hover:text-[#1D9E75] transition-all"
+            className={`w-24 h-24 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:${themeBorderDashed} hover:${themeText} transition-all`}
           >
             <Camera size={24} />
             <span className="text-[10px] font-bold mt-1 uppercase">{t('takePhoto') || "Take Photo"}</span>
@@ -463,13 +486,15 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
   const renderAdd = () => (
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formName')}</label>
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          {selectedCategory === 'food' ? t('formName') : t('formNameClothes')}
+        </label>
         <input
           required
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
+          className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
         />
       </div>
 
@@ -480,7 +505,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           type="text"
           value={formData.address}
           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
+          className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
           placeholder={t('formAddressPlaceholder') || "Enter street address"}
         />
       </div>
@@ -505,15 +530,15 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
               gestureHandling={'greedy'}
             >
               <AdvancedMarker position={formData.location}>
-                <Pin background={'#1D9E75'} borderColor={'#ffffff'} glyphColor={'#ffffff'} />
+                <Pin background={themeColor} borderColor={'#ffffff'} glyphColor={'#ffffff'} />
               </AdvancedMarker>
             </Map>
           </APIProvider>
           <button
             type="button"
             onClick={handleRecenter}
-            className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-lg border border-gray-200 text-[#1D9E75] hover:bg-gray-50 transition-all z-10"
-            title={t('findNearMe')}
+            className={`absolute top-4 right-4 p-2 bg-white rounded-full shadow-lg border border-gray-200 ${themeText} hover:bg-gray-50 transition-all z-10`}
+            title={selectedCategory === 'food' ? t('findNearMe') : t('findNearMeClothes')}
           >
             <MapPin size={20} />
           </button>
@@ -526,7 +551,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
           maxLength={200}
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none h-20 resize-none"
+          className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none h-20 resize-none`}
         />
       </div>
 
@@ -544,11 +569,11 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[95vh]"
           >
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#1D9E75] text-white">
+            <div className={`p-6 border-b border-gray-100 flex justify-between items-center ${themeBg} text-white`}>
               <h2 className="text-xl font-bold">
-                {mode === 'search' ? t('addRestaurant') : 
+                {mode === 'search' ? (selectedCategory === 'food' ? t('addRestaurant') : t('addShop') || t('addRestaurant')) : 
                  mode === 'review' ? t('addReview') || "Add Review" : 
-                 t('addNewRestaurant') || "Add New Restaurant"}
+                 (selectedCategory === 'food' ? t('addNewRestaurant') : t('addNewShop') || t('addNewRestaurant'))}
               </h2>
               <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-all">
                 <X size={24} />
@@ -578,7 +603,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-[#1D9E75] text-white rounded-xl font-bold hover:bg-[#168a65] transition-all shadow-lg"
+                    className={`flex-1 px-6 py-3 ${themeBg} text-white rounded-xl font-bold ${themeHover} transition-all shadow-lg`}
                   >
                     {t('submit')}
                   </button>

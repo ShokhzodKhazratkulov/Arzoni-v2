@@ -10,16 +10,25 @@ interface RestaurantListProps {
   onAddReview: (restaurant: Restaurant) => void;
   selectedDishes: string[];
   customDish?: string;
+  selectedCategory: 'food' | 'clothes';
 }
 
-export default function RestaurantList({ restaurants, sortOption, setSortOption, onAddReview, selectedDishes, customDish }: RestaurantListProps) {
+export default function RestaurantList({ 
+  restaurants, 
+  sortOption, 
+  setSortOption, 
+  onAddReview, 
+  selectedDishes, 
+  customDish,
+  selectedCategory
+}: RestaurantListProps) {
   const { t } = useTranslation();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          {t('totalRestaurants')}
+          {selectedCategory === 'food' ? t('totalRestaurants') : t('totalShops') || t('totalRestaurants')}
           <span className="bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full text-xs">
             {restaurants.length}
           </span>
@@ -41,7 +50,9 @@ export default function RestaurantList({ restaurants, sortOption, setSortOption,
 
       {restaurants.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-          <p className="text-gray-500 font-medium">{t('noResults')}</p>
+          <p className="text-gray-500 font-medium">
+            {selectedCategory === 'food' ? t('noResults') : t('noResultsClothes')}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -52,6 +63,7 @@ export default function RestaurantList({ restaurants, sortOption, setSortOption,
               onAddReview={() => onAddReview(restaurant)}
               selectedDishes={selectedDishes}
               customDish={customDish}
+              selectedCategory={selectedCategory}
             />
           ))}
         </div>

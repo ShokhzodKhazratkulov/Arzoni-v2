@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import imageCompression from 'browser-image-compression';
 import { seedDatabase } from './seed';
 import { Restaurant, SortOption, Review } from './types';
-import { DISH_TYPES, PRICE_RANGES } from './constants';
+import { DISH_TYPES, CLOTHING_TYPES, PRICE_RANGES, CLOTHING_PRICE_RANGES } from './constants';
 import Navbar from './components/Navbar';
 import FilterBar from './components/FilterBar';
 import StatsBar from './components/StatsBar';
@@ -101,6 +101,7 @@ export default function App() {
   const { t } = useTranslation();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<'food' | 'clothes'>('food');
   const [selectedDishes, setSelectedDishes] = useState<string[]>([]);
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
   const [customPrice, setCustomPrice] = useState<number>(0);
@@ -120,6 +121,7 @@ export default function App() {
       const { data, error } = await supabase
         .from('restaurants')
         .select('*')
+        .eq('category', selectedCategory)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -148,7 +150,12 @@ export default function App() {
     // Set up real-time subscription
     const channel = supabase
       .channel('restaurants_changes')
-      .on('postgres_changes', { event: '*', table: 'restaurants', schema: 'public' }, () => {
+      .on('postgres_changes', { 
+        event: '*', 
+        table: 'restaurants', 
+        schema: 'public',
+        filter: `category=eq.${selectedCategory}`
+      }, () => {
         fetchRestaurants();
       })
       .subscribe();
@@ -156,7 +163,7 @@ export default function App() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [selectedCategory]);
 
   const filteredRestaurants = useMemo(() => {
     // First, filter out duplicates by name and address just in case
@@ -189,7 +196,8 @@ export default function App() {
       if (selectedPriceRange === 'custom') {
         matchesPrice = customPrice === 0 || restaurant.price <= customPrice;
       } else {
-        const range = PRICE_RANGES.find(r => r.id === selectedPriceRange);
+        const ranges = selectedCategory === 'food' ? PRICE_RANGES : CLOTHING_PRICE_RANGES;
+        const range = ranges.find(r => r.id === selectedPriceRange);
         if (range) {
           matchesPrice = restaurant.price >= range.min && restaurant.price <= range.max;
         }
@@ -327,10 +335,10 @@ export default function App() {
 
   const recalculateRestaurantMetrics = async (restaurantId: string) => {
     try {
-      // Fetch the restaurant to get its initial price
+      // Fetch the restaurant to get its initial price and category
       const { data: restaurant, error: restFetchError } = await supabase
         .from('restaurants')
-        .select('price')
+        .select('price, category')
         .eq('id', restaurantId)
         .single();
 
@@ -362,9 +370,11 @@ export default function App() {
       const dishGroupedPrices: { [dishId: string]: number[] } = {};
       const dishDisplayNames: { [dishId: string]: string } = {}; // Store original casing for display
       
+      const currentTypes = restaurant.category === 'food' ? DISH_TYPES : CLOTHING_TYPES;
+
       reviews.forEach(review => {
         if (review.dishId) {
-          const isPredefined = DISH_TYPES.some(d => d.id === review.dishId);
+          const isPredefined = currentTypes.some(d => d.id === review.dishId);
           const normalizedId = isPredefined ? review.dishId : review.dishId.toLowerCase();
           
           if (!isPredefined && !dishDisplayNames[normalizedId]) {
@@ -385,7 +395,7 @@ export default function App() {
         const prices = dishGroupedPrices[dishId];
         const avgDishPrice = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
         
-        const isPredefined = DISH_TYPES.some(d => d.id === dishId);
+        const isPredefined = currentTypes.some(d => d.id === dishId);
         const dishReviews = reviews.filter(r => {
           const rId = isPredefined ? r.dishId : (r.dishId?.toLowerCase());
           return rId === dishId;
@@ -497,6 +507,13 @@ export default function App() {
         
         <main className="flex-1 flex flex-col">
           <FilterBar 
+            selectedCategory={selectedCategory}
+            setSelectedCategory={(cat) => {
+              setSelectedCategory(cat);
+              setSelectedDishes([]);
+              setSelectedPriceRange('all');
+              setCustomDish('');
+            }}
             selectedDishes={selectedDishes}
             setSelectedDishes={setSelectedDishes}
             selectedPriceRange={selectedPriceRange}
@@ -515,6 +532,7 @@ export default function App() {
               onAddRestaurant={() => setIsModalOpen(true)}
               selectedDishes={selectedDishes}
               customDish={customDish}
+              selectedCategory={selectedCategory}
             />
 
             <RestaurantList 
@@ -524,6 +542,7 @@ export default function App() {
               onAddReview={handleOpenReviewModal}
               selectedDishes={selectedDishes}
               customDish={customDish}
+              selectedCategory={selectedCategory}
             />
           </div>
         </main>
@@ -537,6 +556,7 @@ export default function App() {
           onSubmit={handleAddRestaurant}
           onAddReview={handleAddReview}
           initialRestaurant={initialRestaurantForModal}
+          selectedCategory={selectedCategory}
         />
 
         {loading && (
@@ -576,7 +596,7 @@ export default function App() {
               <div className="w-8 h-4 bg-[#0099B5]" title="Blue"></div>
             </div>
             <p className="text-gray-400 text-xs font-medium">
-              &copy; {new Date().getFullYear()} Arzoni — {t('tagline')}
+              &copy; {new Date().getFullYear()} Arzoni — {t('taglinePart1')} {t('foodItem')}/{t('clothesItem')} {t('taglinePart2')}
             </p>
           </div>
         </footer>

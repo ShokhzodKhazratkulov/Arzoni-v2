@@ -9,6 +9,7 @@ export interface Restaurant {
   id?: string;
   name: string;
   address: string;
+  category: 'food' | 'clothes';
   dishes: string[];
   price: number; // This will be the initial price or the computed avgPrice
   avgPrice?: number;

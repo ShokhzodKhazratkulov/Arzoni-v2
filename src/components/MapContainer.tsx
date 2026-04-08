@@ -19,9 +19,10 @@ interface MapContainerProps {
   onAddRestaurant: () => void;
   selectedDishes?: string[];
   customDish?: string;
+  selectedCategory: 'food' | 'clothes';
 }
 
-const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customDish }: MapContainerProps) => {
+const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customDish, selectedCategory }: MapContainerProps) => {
   const { t } = useTranslation();
   const map = useMap();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -77,8 +78,13 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
   }, [map]);
 
   const getPinColor = (price: number) => {
-    if (price <= 30000) return '#1D9E75'; // Green
-    if (price <= 45000) return '#F97316'; // Orange
+    if (selectedCategory === 'clothes') {
+      if (price <= 50000) return '#6366F1'; // Indigo
+      if (price <= 100000) return '#8B5CF6'; // Violet
+      return '#A855F7'; // Purple
+    }
+    if (price <= 25000) return '#1D9E75'; // Green
+    if (price <= 35000) return '#F97316'; // Orange
     return '#EF4444'; // Red
   };
 
@@ -192,6 +198,7 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
           restaurant={selectedRestaurant}
           selectedDishes={selectedDishes}
           customDish={customDish}
+          selectedCategory={selectedCategory}
         />
       )}
     </div>
