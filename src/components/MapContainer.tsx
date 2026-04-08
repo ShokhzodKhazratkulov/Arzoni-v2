@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { 
   APIProvider, 
   Map, 
@@ -18,9 +18,10 @@ interface MapContainerProps {
   restaurants: Restaurant[];
   onAddRestaurant: () => void;
   selectedDishes?: string[];
+  customDish?: string;
 }
 
-const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [] }: MapContainerProps) => {
+const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customDish }: MapContainerProps) => {
   const { t } = useTranslation();
   const map = useMap();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -30,9 +31,17 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [] }: MapCo
   const selectedRestaurant = restaurants.find(r => r.id === selectedId);
 
   // Calculate info for selected restaurant
-  const activeDishId = selectedRestaurant && selectedDishes.length > 0 
-    ? (selectedDishes.find(id => selectedRestaurant.dishStats?.[id]?.bestComment) || selectedDishes[0])
-    : null;
+  const activeDishId = useMemo(() => {
+    if (!selectedRestaurant || selectedDishes.length === 0) return null;
+    
+    if (selectedDishes.includes('custom') && customDish) {
+      const normalizedSearch = customDish.toLowerCase();
+      const matchingKey = Object.keys(selectedRestaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+      return matchingKey || customDish;
+    }
+    
+    return selectedDishes.find(id => selectedRestaurant.dishStats?.[id]?.bestComment) || selectedDishes[0];
+  }, [selectedRestaurant, selectedDishes, customDish]);
 
   const displayPrice = selectedRestaurant 
     ? (activeDishId && selectedRestaurant.dishStats?.[activeDishId] 
@@ -116,21 +125,17 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [] }: MapCo
               >
                 {selectedRestaurant.name}
               </h3>
-              <div 
-                className="w-full h-28 rounded-lg overflow-hidden mt-1 cursor-pointer relative group bg-gray-100"
-                onClick={() => setIsDetailsOpen(true)}
-              >
-                {selectedRestaurant.photoUrl ? (
+              {selectedRestaurant.photoUrl && (
+                <div 
+                  className="w-full h-20 rounded-lg overflow-hidden mt-1 cursor-pointer relative group"
+                  onClick={() => setIsDetailsOpen(true)}
+                >
                   <img src={selectedRestaurant.photoUrl} alt={selectedRestaurant.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300">
-                    <MapPin size={24} />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <Info size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                  <Info size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              </div>
+              )}
               <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-1">
                 <Star size={10} className="text-yellow-400 fill-yellow-400" />
                 <span className="font-bold">{selectedRestaurant.rating}</span>
@@ -186,6 +191,7 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [] }: MapCo
           onClose={() => setIsDetailsOpen(false)}
           restaurant={selectedRestaurant}
           selectedDishes={selectedDishes}
+          customDish={customDish}
         />
       )}
     </div>

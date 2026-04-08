@@ -38,9 +38,10 @@ interface RestaurantDetailsModalProps {
   restaurant: Restaurant;
   onAddReview?: () => void;
   selectedDishes?: string[];
+  customDish?: string;
 }
 
-export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: initialRestaurant, onAddReview, selectedDishes = [] }: RestaurantDetailsModalProps) {
+export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: initialRestaurant, onAddReview, selectedDishes = [], customDish }: RestaurantDetailsModalProps) {
   const { t } = useTranslation();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
@@ -453,8 +454,10 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
               <div className="flex flex-wrap gap-2">
                 {restaurant.dishes.map(dishId => {
                   const dish = DISH_TYPES.find(d => d.id === dishId);
-                  const isSelected = selectedDishes.includes(dishId);
-                  return dish ? (
+                  const isSelected = selectedDishes.includes(dishId) || 
+                    (selectedDishes.includes('custom') && customDish && dishId.toLowerCase() === customDish.toLowerCase());
+                  
+                  return (
                     <span 
                       key={dishId} 
                       className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
@@ -463,9 +466,9 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                           : "bg-[#1D9E75]/10 text-[#1D9E75]"
                       }`}
                     >
-                      {t(dish.label)}
+                      {dish ? t(dish.label) : (restaurant.dishStats?.[dishId]?.displayName || dishId)}
                     </span>
-                  ) : null;
+                  );
                 })}
               </div>
             </div>
@@ -517,7 +520,9 @@ export default function RestaurantDetailsModal({ isOpen, onClose, restaurant: in
                                 <>
                                   {' • '}
                                   <span className="text-[#1D9E75] font-bold">
-                                    {t(DISH_TYPES.find(d => d.id === review.dishId)?.label || '')}
+                                    {DISH_TYPES.find(d => d.id === review.dishId) 
+                                      ? t(DISH_TYPES.find(d => d.id === review.dishId)!.label) 
+                                      : (restaurant.dishStats?.[review.dishId.toLowerCase()]?.displayName || review.dishId)}
                                   </span>
                                 </>
                               )}

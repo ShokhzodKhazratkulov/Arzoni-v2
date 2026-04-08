@@ -11,9 +11,10 @@ interface RestaurantCardProps {
   onAddReview?: () => void;
   key?: string;
   selectedDishes?: string[];
+  customDish?: string;
 }
 
-export default function RestaurantCard({ restaurant, onAddReview, selectedDishes = [] }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant, onAddReview, selectedDishes = [], customDish }: RestaurantCardProps) {
   const { t } = useTranslation();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -23,10 +24,21 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
     return 'text-red-600 bg-red-50 border-red-100';
   };
 
-  // Find the most relevant dish to display info for (first selected dish with a comment, or just the first selected dish)
-  const activeDishId = selectedDishes.length > 0 
-    ? (selectedDishes.find(id => restaurant.dishStats?.[id]?.bestComment) || selectedDishes[0])
-    : null;
+  // Find the most relevant dish to display info for
+  const activeDishId = useMemo(() => {
+    if (selectedDishes.length === 0) return null;
+    
+    // If 'custom' is selected, the customDish string is the target ID for stats
+    if (selectedDishes.includes('custom') && customDish) {
+      const normalizedSearch = customDish.toLowerCase();
+      // Find a key in dishStats that matches (case-insensitive)
+      const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+      return matchingKey || customDish;
+    }
+    
+    // Otherwise find the first selected dish that has a comment
+    return selectedDishes.find(id => restaurant.dishStats?.[id]?.bestComment) || selectedDishes[0];
+  }, [selectedDishes, customDish, restaurant.dishStats]);
 
   const displayPrice = activeDishId && restaurant.dishStats?.[activeDishId] 
     ? restaurant.dishStats[activeDishId].avgPrice 
@@ -69,7 +81,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
         className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5 flex flex-col gap-4 group relative"
       >
         <div 
-          className="w-full h-48 rounded-xl overflow-hidden mb-1 relative bg-gray-100 cursor-pointer"
+          className="w-full h-40 rounded-xl overflow-hidden mb-1 relative bg-gray-100 cursor-pointer"
           onClick={() => setIsDetailsOpen(true)}
         >
           {restaurant.photoUrl ? (
@@ -81,7 +93,7 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300">
-              <MapPin size={48} />
+              <Star size={32} />
             </div>
           )}
           
@@ -116,8 +128,11 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
         <div className="flex flex-wrap gap-1.5">
           {restaurant.dishes.map(dishId => {
             const dish = DISH_TYPES.find(d => d.id === dishId);
-            const isSelected = selectedDishes.includes(dishId);
-            return dish ? (
+            // Highlight if exact match with dishId OR if it's a custom dish and matches activeDishId (case-insensitive)
+            const isSelected = selectedDishes.includes(dishId) || 
+              (selectedDishes.includes('custom') && customDish && dishId.toLowerCase() === customDish.toLowerCase());
+            
+            return (
               <span 
                 key={dishId} 
                 className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${
@@ -126,9 +141,9 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {t(dish.label)}
+                {dish ? t(dish.label) : (restaurant.dishStats?.[dishId]?.displayName || dishId)}
               </span>
-            ) : null;
+            );
           })}
         </div>
 

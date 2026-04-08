@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import imageCompression from 'browser-image-compression';
 import { seedDatabase } from './seed';
 import { Restaurant, SortOption, Review } from './types';
-import { PRICE_RANGES } from './constants';
+import { DISH_TYPES, PRICE_RANGES } from './constants';
 import Navbar from './components/Navbar';
 import FilterBar from './components/FilterBar';
 import StatsBar from './components/StatsBar';
@@ -104,6 +104,7 @@ export default function App() {
   const [selectedDishes, setSelectedDishes] = useState<string[]>([]);
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
   const [customPrice, setCustomPrice] = useState<number>(0);
+  const [customDish, setCustomDish] = useState<string>('');
   const [sortOption, setSortOption] = useState<SortOption>('price');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [initialRestaurantForModal, setInitialRestaurantForModal] = useState<Restaurant | null>(null);
@@ -170,8 +171,18 @@ export default function App() {
 
     return uniqueRestaurants.filter(restaurant => {
       // Dish filter
-      const matchesDishes = selectedDishes.length === 0 || 
-        selectedDishes.some(dish => restaurant.dishes.includes(dish));
+      let matchesDishes = selectedDishes.length === 0;
+      
+      if (selectedDishes.length > 0) {
+        matchesDishes = selectedDishes.some(dish => {
+          if (dish === 'custom') {
+            if (!customDish) return true; // If custom selected but no text, show all (or could show none)
+            // Check if any of the restaurant's dishes match the custom string (case-insensitive)
+            return restaurant.dishes.some(d => d.toLowerCase().includes(customDish.toLowerCase()));
+          }
+          return restaurant.dishes.includes(dish);
+        });
+      }
       
       // Price filter
       let matchesPrice = true;
@@ -188,10 +199,19 @@ export default function App() {
     }).sort((a, b) => {
       // If a single dish is selected, sort by dishScore for that dish
       if (selectedDishes.length === 1) {
-        const dishId = selectedDishes[0];
-        const scoreA = a.dishScore?.[dishId] || 0;
-        const scoreB = b.dishScore?.[dishId] || 0;
-        if (scoreA !== scoreB) return scoreB - scoreA;
+        let dishId = selectedDishes[0] === 'custom' ? customDish : selectedDishes[0];
+        if (dishId) {
+          dishId = dishId.toLowerCase(); // Normalize for lookup
+          
+          // Find the key in dishScore that matches (case-insensitive)
+          const scoreKeyA = Object.keys(a.dishScore || {}).find(k => k.toLowerCase() === dishId);
+          const scoreKeyB = Object.keys(b.dishScore || {}).find(k => k.toLowerCase() === dishId);
+          
+          const scoreA = scoreKeyA ? a.dishScore![scoreKeyA] : 0;
+          const scoreB = scoreKeyB ? b.dishScore![scoreKeyB] : 0;
+          
+          if (scoreA !== scoreB) return scoreB - scoreA;
+        }
       }
 
       if (sortOption === 'price') return a.price - b.price;
@@ -199,7 +219,7 @@ export default function App() {
       // Distance sorting would require user location, simplified for now
       return 0;
     });
-  }, [restaurants, selectedDishes, selectedPriceRange, customPrice, sortOption]);
+  }, [restaurants, selectedDishes, selectedPriceRange, customPrice, customDish, sortOption]);
 
   const handleOpenReviewModal = (restaurant: Restaurant) => {
     setInitialRestaurantForModal(restaurant);
@@ -340,24 +360,37 @@ export default function App() {
 
       const dishCounts: { [dishId: string]: number } = {};
       const dishGroupedPrices: { [dishId: string]: number[] } = {};
+      const dishDisplayNames: { [dishId: string]: string } = {}; // Store original casing for display
       
       reviews.forEach(review => {
         if (review.dishId) {
-          dishCounts[review.dishId] = (dishCounts[review.dishId] || 0) + 1;
-          if (!dishGroupedPrices[review.dishId]) dishGroupedPrices[review.dishId] = [];
-          dishGroupedPrices[review.dishId].push(review.priceSpent);
+          const isPredefined = DISH_TYPES.some(d => d.id === review.dishId);
+          const normalizedId = isPredefined ? review.dishId : review.dishId.toLowerCase();
+          
+          if (!isPredefined && !dishDisplayNames[normalizedId]) {
+            dishDisplayNames[normalizedId] = review.dishId; // Keep the first casing we find
+          }
+
+          dishCounts[normalizedId] = (dishCounts[normalizedId] || 0) + 1;
+          if (!dishGroupedPrices[normalizedId]) dishGroupedPrices[normalizedId] = [];
+          dishGroupedPrices[normalizedId].push(review.priceSpent);
         }
       });
 
       const dishScore: { [dishId: string]: number } = {};
-      const dishStats: { [dishId: string]: { avgPrice: number; reviewCount: number; bestComment?: string } } = {};
+      const dishStats: { [dishId: string]: { avgPrice: number; reviewCount: number; bestComment?: string; displayName?: string } } = {};
       
       Object.keys(dishCounts).forEach(dishId => {
         dishScore[dishId] = dishCounts[dishId] / reviewCount;
         const prices = dishGroupedPrices[dishId];
         const avgDishPrice = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
         
-        const dishReviews = reviews.filter(r => r.dishId === dishId);
+        const isPredefined = DISH_TYPES.some(d => d.id === dishId);
+        const dishReviews = reviews.filter(r => {
+          const rId = isPredefined ? r.dishId : (r.dishId?.toLowerCase());
+          return rId === dishId;
+        });
+
         const reviewsWithComments = dishReviews.filter(r => r.comment && r.comment.trim().length > 0);
         const bestReview = reviewsWithComments.length > 0
           ? reviewsWithComments.reduce((prev, curr) => (curr.likes || 0) > (prev.likes || 0) ? curr : prev, reviewsWithComments[0])
@@ -366,7 +399,8 @@ export default function App() {
         dishStats[dishId] = {
           avgPrice: avgDishPrice,
           reviewCount: dishCounts[dishId],
-          bestComment: bestReview?.comment
+          bestComment: bestReview?.comment,
+          displayName: dishDisplayNames[dishId] // Will be undefined for predefined
         };
       });
 
@@ -469,6 +503,8 @@ export default function App() {
             setSelectedPriceRange={setSelectedPriceRange}
             customPrice={customPrice}
             setCustomPrice={setCustomPrice}
+            customDish={customDish}
+            setCustomDish={setCustomDish}
           />
 
           <StatsBar restaurants={filteredRestaurants} />
@@ -478,6 +514,7 @@ export default function App() {
               restaurants={filteredRestaurants} 
               onAddRestaurant={() => setIsModalOpen(true)}
               selectedDishes={selectedDishes}
+              customDish={customDish}
             />
 
             <RestaurantList 
@@ -486,6 +523,7 @@ export default function App() {
               setSortOption={setSortOption}
               onAddReview={handleOpenReviewModal}
               selectedDishes={selectedDishes}
+              customDish={customDish}
             />
           </div>
         </main>

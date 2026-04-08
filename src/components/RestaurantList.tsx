@@ -9,9 +9,10 @@ interface RestaurantListProps {
   setSortOption: (option: SortOption) => void;
   onAddReview: (restaurant: Restaurant) => void;
   selectedDishes: string[];
+  customDish?: string;
 }
 
-export default function RestaurantList({ restaurants, sortOption, setSortOption, onAddReview, selectedDishes }: RestaurantListProps) {
+export default function RestaurantList({ restaurants, sortOption, setSortOption, onAddReview, selectedDishes, customDish }: RestaurantListProps) {
   const { t } = useTranslation();
 
   return (
@@ -50,6 +51,7 @@ export default function RestaurantList({ restaurants, sortOption, setSortOption,
               restaurant={restaurant} 
               onAddReview={() => onAddReview(restaurant)}
               selectedDishes={selectedDishes}
+              customDish={customDish}
             />
           ))}
         </div>

@@ -72,7 +72,8 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
     comment: '',
     submitter: '',
     priceSpent: 0,
-    dishId: ''
+    dishId: '',
+    customDishName: ''
   });
 
   useEffect(() => {
@@ -104,7 +105,8 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
         comment: '',
         submitter: '',
         priceSpent: 0,
-        dishId: ''
+        dishId: '',
+        customDishName: ''
       });
     }
   }, [isOpen, initialRestaurant]);
@@ -197,8 +199,11 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
     e.preventDefault();
     
     if (mode === 'review' && selectedRestaurant?.id) {
+      const finalDishId = reviewData.dishId === 'other' ? reviewData.customDishName : reviewData.dishId;
+      
       onAddReview(selectedRestaurant.id, {
         ...reviewData,
+        dishId: finalDishId,
         restaurantId: selectedRestaurant.id,
         photoFile: photoFile, // Pass the file object
         createdAt: new Date().toISOString(),
@@ -349,8 +354,23 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
               {t(dish.label)}
             </option>
           ))}
+          <option value="other">{t('otherDish')}</option>
         </select>
       </div>
+
+      {reviewData.dishId === 'other' && (
+        <div className="space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customDish')}</label>
+          <input
+            required
+            type="text"
+            value={reviewData.customDishName}
+            onChange={(e) => setReviewData({ ...reviewData, customDishName: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1D9E75] focus:outline-none"
+            placeholder={t('customDishPlaceholder')}
+          />
+        </div>
+      )}
 
       <div className="space-y-1">
         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('yourComment') || "Your Comment"}</label>

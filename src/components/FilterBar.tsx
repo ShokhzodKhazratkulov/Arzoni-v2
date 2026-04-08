@@ -9,6 +9,8 @@ interface FilterBarProps {
   setSelectedPriceRange: (range: string) => void;
   customPrice: number;
   setCustomPrice: (price: number) => void;
+  customDish: string;
+  setCustomDish: (dish: string) => void;
 }
 
 export default function FilterBar({
@@ -17,15 +19,17 @@ export default function FilterBar({
   selectedPriceRange,
   setSelectedPriceRange,
   customPrice,
-  setCustomPrice
+  setCustomPrice,
+  customDish,
+  setCustomDish
 }: FilterBarProps) {
   const { t } = useTranslation();
 
   const toggleDish = (id: string) => {
     if (selectedDishes.includes(id)) {
-      setSelectedDishes(selectedDishes.filter(d => d !== id));
+      setSelectedDishes([]);
     } else {
-      setSelectedDishes([...selectedDishes, id]);
+      setSelectedDishes([id]);
     }
   };
 
@@ -47,8 +51,40 @@ export default function FilterBar({
               {t(dish.label)}
             </button>
           ))}
+          <button
+            onClick={() => {
+              if (selectedDishes.includes('custom')) {
+                setSelectedDishes([]);
+                setCustomDish('');
+              } else {
+                setSelectedDishes(['custom']);
+              }
+            }}
+            className={cn(
+              "whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium border transition-all",
+              selectedDishes.includes('custom')
+                ? "bg-[#1D9E75] text-white border-[#1D9E75] shadow-sm"
+                : "bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
+            )}
+          >
+            {t('customDish')}
+          </button>
         </div>
       </div>
+
+      {selectedDishes.includes('custom') && (
+        <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={customDish}
+              onChange={(e) => setCustomDish(e.target.value)}
+              placeholder={t('customDishPlaceholder')}
+              className="w-full sm:w-64 px-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D9E75]"
+            />
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap gap-2">

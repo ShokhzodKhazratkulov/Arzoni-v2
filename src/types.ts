@@ -30,6 +30,7 @@ export interface Restaurant {
       avgPrice: number;
       reviewCount: number;
       bestComment?: string;
+      displayName?: string;
     }
   };
 }
