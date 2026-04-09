@@ -193,13 +193,44 @@ export default function App() {
       
       // Price filter
       let matchesPrice = true;
+      
+      // Determine the effective price for this restaurant based on selected dishes
+      const activeDishId = (() => {
+        if (selectedDishes.length === 0) return null;
+        
+        if (selectedDishes.includes('custom') && customDish) {
+          const normalizedSearch = customDish.toLowerCase();
+          const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+          return matchingKey || customDish;
+        }
+        
+        const foundId = selectedDishes.find(id => {
+          const normalizedId = id.toLowerCase();
+          const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+          return matchingKey && restaurant.dishStats[matchingKey]?.bestComment;
+        });
+
+        if (foundId) {
+          const normalizedId = foundId.toLowerCase();
+          return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+        }
+
+        const firstId = selectedDishes[0];
+        const normalizedFirstId = firstId.toLowerCase();
+        return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
+      })();
+
+      const effectivePrice = activeDishId && restaurant.dishStats?.[activeDishId] 
+        ? restaurant.dishStats[activeDishId].avgPrice 
+        : (restaurant.avgPrice || restaurant.price);
+
       if (selectedPriceRange === 'custom') {
-        matchesPrice = customPrice === 0 || restaurant.price <= customPrice;
+        matchesPrice = customPrice === 0 || effectivePrice <= customPrice;
       } else {
         const ranges = selectedCategory === 'food' ? PRICE_RANGES : CLOTHING_PRICE_RANGES;
         const range = ranges.find(r => r.id === selectedPriceRange);
         if (range) {
-          matchesPrice = restaurant.price >= range.min && restaurant.price <= range.max;
+          matchesPrice = effectivePrice >= range.min && effectivePrice <= range.max;
         }
       }
 
@@ -222,7 +253,35 @@ export default function App() {
         }
       }
 
-      if (sortOption === 'price') return a.price - b.price;
+      if (sortOption === 'price') {
+        const getEffectivePrice = (r: Restaurant) => {
+          const dishId = (() => {
+            if (selectedDishes.length === 0) return null;
+            if (selectedDishes.includes('custom') && customDish) {
+              const normalizedSearch = customDish.toLowerCase();
+              const matchingKey = Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+              return matchingKey || customDish;
+            }
+            const foundId = selectedDishes.find(id => {
+              const normalizedId = id.toLowerCase();
+              const matchingKey = Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+              return matchingKey && r.dishStats[matchingKey]?.bestComment;
+            });
+            if (foundId) {
+              const normalizedId = foundId.toLowerCase();
+              return Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+            }
+            const firstId = selectedDishes[0];
+            const normalizedFirstId = firstId.toLowerCase();
+            return Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
+          })();
+
+          return dishId && r.dishStats?.[dishId] 
+            ? r.dishStats[dishId].avgPrice 
+            : (r.avgPrice || r.price);
+        };
+        return getEffectivePrice(a) - getEffectivePrice(b);
+      }
       if (sortOption === 'rating') return b.rating - a.rating;
       // Distance sorting would require user location, simplified for now
       return 0;
