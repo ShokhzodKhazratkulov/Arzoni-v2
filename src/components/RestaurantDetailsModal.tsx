@@ -6,7 +6,6 @@ import { Restaurant, Review } from '../types';
 import { supabase } from '../supabase';
 import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import imageCompression from 'browser-image-compression';
-import DirectionsPicker from './DirectionsPicker';
 
 enum OperationType {
   CREATE = 'create',
@@ -60,7 +59,6 @@ export default function RestaurantDetailsModal({
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(initialRestaurant.name);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const themeColor = selectedCategory === 'food' ? '#1D9E75' : '#6366F1';
@@ -636,7 +634,13 @@ export default function RestaurantDetailsModal({
           {/* Footer */}
           <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
             <button 
-              onClick={() => setIsDirectionsOpen(true)}
+              onClick={() => {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const url = isIOS 
+                  ? `maps://?daddr=${restaurant.location.lat},${restaurant.location.lng}&q=${encodeURIComponent(restaurant.name)}`
+                  : `geo:${restaurant.location.lat},${restaurant.location.lng}?q=${restaurant.location.lat},${restaurant.location.lng}(${encodeURIComponent(restaurant.name)})`;
+                window.location.href = url;
+              }}
               className={`flex items-center gap-2 ${themeBg} text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg ${themeShadow} hover:scale-105 transition-transform`}
             >
               <Navigation size={16} />
@@ -651,13 +655,6 @@ export default function RestaurantDetailsModal({
           </div>
         </motion.div>
       </div>
-
-      <DirectionsPicker 
-        isOpen={isDirectionsOpen}
-        onClose={() => setIsDirectionsOpen(false)}
-        location={restaurant.location}
-        name={restaurant.name}
-      />
     </AnimatePresence>
   );
 }
