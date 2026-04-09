@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { MapPin, LogIn, LogOut, ShieldCheck, User } from 'lucide-react';
 import { Language } from '../types';
 import { useAuth } from '../lib/AuthContext';
+import LoginModal from './LoginModal';
 
 interface NavbarProps {
   onAdminClick?: () => void;
@@ -9,7 +11,8 @@ interface NavbarProps {
 
 export default function Navbar({ onAdminClick }: NavbarProps) {
   const { t, i18n } = useTranslation();
-  const { user, isAdmin, signInWithGoogle, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const changeLanguage = (lng: Language) => {
     i18n.changeLanguage(lng);
@@ -76,7 +79,7 @@ export default function Navbar({ onAdminClick }: NavbarProps) {
               </div>
             ) : (
               <button 
-                onClick={() => signInWithGoogle()}
+                onClick={() => setIsLoginOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-wider hover:bg-gray-100 transition-colors"
               >
                 <LogIn size={14} />
@@ -114,6 +117,11 @@ export default function Navbar({ onAdminClick }: NavbarProps) {
           </div>
         </div>
       </div>
+
+      <LoginModal 
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+      />
     </nav>
   );
 }
