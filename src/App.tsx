@@ -236,6 +236,33 @@ export default function App() {
 
       return matchesDishes && matchesPrice;
     }).sort((a, b) => {
+      const getEffectivePrice = (r: Restaurant) => {
+        const dishId = (() => {
+          if (selectedDishes.length === 0) return null;
+          if (selectedDishes.includes('custom') && customDish) {
+            const normalizedSearch = customDish.toLowerCase();
+            const matchingKey = Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+            return matchingKey || customDish;
+          }
+          const foundId = selectedDishes.find(id => {
+            const normalizedId = id.toLowerCase();
+            const matchingKey = Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+            return matchingKey && r.dishStats[matchingKey]?.bestComment;
+          });
+          if (foundId) {
+            const normalizedId = foundId.toLowerCase();
+            return Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+          }
+          const firstId = selectedDishes[0];
+          const normalizedFirstId = firstId.toLowerCase();
+          return Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
+        })();
+
+        return dishId && r.dishStats?.[dishId] 
+          ? r.dishStats[dishId].avgPrice 
+          : (r.avgPrice || r.price);
+      };
+
       // If a single dish is selected, sort by dishScore for that dish
       if (selectedDishes.length === 1) {
         let dishId = selectedDishes[0] === 'custom' ? customDish : selectedDishes[0];
@@ -253,40 +280,11 @@ export default function App() {
         }
       }
 
-      if (sortOption === 'price') {
-        const getEffectivePrice = (r: Restaurant) => {
-          const dishId = (() => {
-            if (selectedDishes.length === 0) return null;
-            if (selectedDishes.includes('custom') && customDish) {
-              const normalizedSearch = customDish.toLowerCase();
-              const matchingKey = Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
-              return matchingKey || customDish;
-            }
-            const foundId = selectedDishes.find(id => {
-              const normalizedId = id.toLowerCase();
-              const matchingKey = Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
-              return matchingKey && r.dishStats[matchingKey]?.bestComment;
-            });
-            if (foundId) {
-              const normalizedId = foundId.toLowerCase();
-              return Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
-            }
-            const firstId = selectedDishes[0];
-            const normalizedFirstId = firstId.toLowerCase();
-            return Object.keys(r.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
-          })();
-
-          return dishId && r.dishStats?.[dishId] 
-            ? r.dishStats[dishId].avgPrice 
-            : (r.avgPrice || r.price);
-        };
-        return getEffectivePrice(a) - getEffectivePrice(b);
-      }
+      if (sortOption === 'price') return getEffectivePrice(a) - getEffectivePrice(b);
       if (sortOption === 'rating') return b.rating - a.rating;
-      // Distance sorting would require user location, simplified for now
       return 0;
     });
-  }, [restaurants, selectedDishes, selectedPriceRange, customPrice, customDish, sortOption]);
+  }, [restaurants, selectedDishes, selectedPriceRange, customPrice, customDish, sortOption, selectedCategory]);
 
   const handleOpenReviewModal = (restaurant: Restaurant) => {
     setInitialRestaurantForModal(restaurant);

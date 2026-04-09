@@ -14,38 +14,33 @@ export default function DirectionsPicker({ isOpen, onClose, location, name }: Di
   const { t } = useTranslation();
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
 
-  const mapApps = [
-    {
+  const apps = {
+    google: {
       id: 'google',
       name: t('openInGoogleMaps'),
       url: `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`,
-      icon: 'https://www.google.com/images/branding/product/2x/maps_96in128dp.png'
+      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Google_Maps_icon_%282020%29.svg/1024px-Google_Maps_icon_%282020%29.svg.png'
     },
-    {
-      id: 'yandex',
-      name: t('openInYandexMaps'),
-      url: `yandexmaps://maps.yandex.ru/?pt=${location.lng},${location.lat}&z=12&l=map`,
-      fallbackUrl: `https://yandex.com/maps/?rtext=~${location.lat},${location.lng}`,
-      icon: 'https://yandex-favicons.s3.yandex.net/favicons-main/64/yandex.ru.png'
-    },
-    {
-      id: 'waze',
-      name: t('openInWaze'),
-      url: `waze://?ll=${location.lat},${location.lng}&navigate=yes`,
-      fallbackUrl: `https://www.waze.com/ul?ll=${location.lat},${location.lng}&navigate=yes`,
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Waze_icon.svg/1200px-Waze_icon.svg.png'
-    }
-  ];
-
-  if (isIOS) {
-    mapApps.splice(1, 0, {
+    apple: {
       id: 'apple',
       name: t('openInAppleMaps'),
       url: `maps://?daddr=${location.lat},${location.lng}&q=${encodeURIComponent(name)}`,
       icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Apple_Maps_icon.svg/1200px-Apple_Maps_icon.svg.png'
-    });
-  }
+    },
+    yandex: {
+      id: 'yandex',
+      name: t('openInYandexMaps'),
+      url: `yandexmaps://maps.yandex.ru/?rtext=~${location.lat},${location.lng}`,
+      fallbackUrl: `https://yandex.com/maps/?rtext=~${location.lat},${location.lng}`,
+      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Yandex.Maps_icon.svg/1024px-Yandex.Maps_icon.svg.png'
+    }
+  };
+
+  const mapApps = isIOS 
+    ? [apps.yandex, apps.apple] 
+    : [apps.google, apps.yandex];
 
   const handleOpenApp = (app: any) => {
     const start = Date.now();
