@@ -21,20 +21,20 @@ export default function DirectionsPicker({ isOpen, onClose, location, name }: Di
       id: 'google',
       name: t('openInGoogleMaps'),
       url: `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`,
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Google_Maps_icon_%282020%29.svg/1024px-Google_Maps_icon_%282020%29.svg.png'
+      icon: 'input_file_2.png'
     },
     apple: {
       id: 'apple',
       name: t('openInAppleMaps'),
       url: `maps://?daddr=${location.lat},${location.lng}&q=${encodeURIComponent(name)}`,
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Apple_Maps_icon.svg/1200px-Apple_Maps_icon.svg.png'
+      icon: 'input_file_1.png'
     },
     yandex: {
       id: 'yandex',
       name: t('openInYandexMaps'),
       url: `yandexmaps://maps.yandex.ru/?rtext=~${location.lat},${location.lng}`,
       fallbackUrl: `https://yandex.com/maps/?rtext=~${location.lat},${location.lng}`,
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Yandex.Maps_icon.svg/1024px-Yandex.Maps_icon.svg.png'
+      icon: 'input_file_0.png'
     }
   };
 
