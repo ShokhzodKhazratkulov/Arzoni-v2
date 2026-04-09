@@ -13,6 +13,7 @@ import { TASHKENT_CENTER, DISH_TYPES } from '../constants';
 import { Navigation, Star, MapPin, Crosshair, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import RestaurantDetailsModal from './RestaurantDetailsModal';
+import DirectionsPicker from './DirectionsPicker';
 
 interface MapContainerProps {
   restaurants: Restaurant[];
@@ -28,6 +29,7 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   const selectedRestaurant = restaurants.find(r => r.id === selectedId);
 
@@ -191,15 +193,13 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
                 >
                   {Math.round(displayPrice).toLocaleString()} {t('som')}
                 </button>
-                <a 
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedRestaurant.location.lat},${selectedRestaurant.location.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button 
+                  onClick={() => setIsDirectionsOpen(true)}
                   className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1"
                 >
                   <Navigation size={10} />
                   {t('getDirections')}
-                </a>
+                </button>
               </div>
             </div>
           </InfoWindow>
@@ -233,6 +233,15 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
           selectedDishes={selectedDishes}
           customDish={customDish}
           selectedCategory={selectedCategory}
+        />
+      )}
+
+      {selectedRestaurant && (
+        <DirectionsPicker 
+          isOpen={isDirectionsOpen}
+          onClose={() => setIsDirectionsOpen(false)}
+          location={selectedRestaurant.location}
+          name={selectedRestaurant.name}
         />
       )}
     </div>

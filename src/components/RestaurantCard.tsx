@@ -5,6 +5,7 @@ import { Restaurant } from '../types';
 import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import { motion } from 'motion/react';
 import RestaurantDetailsModal from './RestaurantDetailsModal';
+import DirectionsPicker from './DirectionsPicker';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -18,6 +19,7 @@ interface RestaurantCardProps {
 export default function RestaurantCard({ restaurant, onAddReview, selectedDishes = [], customDish, selectedCategory }: RestaurantCardProps) {
   const { t } = useTranslation();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   const getPriceColor = (price: number) => {
     if (selectedCategory === 'clothes') {
@@ -209,17 +211,25 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             )}
           </div>
           
-          <a 
-            href={`https://www.google.com/maps/dir/?api=1&destination=${restaurant.location.lat},${restaurant.location.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsDirectionsOpen(true);
+            }}
             className={`flex flex-col items-center gap-0.5 ${themeText} hover:opacity-80 transition-opacity`}
           >
             <Navigation size={14} className={selectedCategory === 'food' ? "fill-[#1D9E75]/10" : "fill-indigo-500/10"} />
             <span className="text-[9px] font-black uppercase leading-none text-center">{t('getDirections')}</span>
-          </a>
+          </button>
         </div>
       </motion.div>
+
+      <DirectionsPicker 
+        isOpen={isDirectionsOpen}
+        onClose={() => setIsDirectionsOpen(false)}
+        location={restaurant.location}
+        name={restaurant.name}
+      />
 
       <RestaurantDetailsModal 
         isOpen={isDetailsOpen}

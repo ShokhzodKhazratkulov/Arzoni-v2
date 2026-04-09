@@ -6,6 +6,7 @@ import { Restaurant, Review } from '../types';
 import { supabase } from '../supabase';
 import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import imageCompression from 'browser-image-compression';
+import DirectionsPicker from './DirectionsPicker';
 
 enum OperationType {
   CREATE = 'create',
@@ -59,6 +60,7 @@ export default function RestaurantDetailsModal({
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(initialRestaurant.name);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const themeColor = selectedCategory === 'food' ? '#1D9E75' : '#6366F1';
@@ -633,15 +635,13 @@ export default function RestaurantDetailsModal({
 
           {/* Footer */}
           <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-            <a 
-              href={`https://www.google.com/maps/dir/?api=1&destination=${restaurant.location.lat},${restaurant.location.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button 
+              onClick={() => setIsDirectionsOpen(true)}
               className={`flex items-center gap-2 ${themeBg} text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg ${themeShadow} hover:scale-105 transition-transform`}
             >
               <Navigation size={16} />
               {t('getDirections')}
-            </a>
+            </button>
             <button
               onClick={onClose}
               className="px-6 py-2.5 text-gray-500 font-bold text-sm hover:text-gray-700"
@@ -651,6 +651,13 @@ export default function RestaurantDetailsModal({
           </div>
         </motion.div>
       </div>
+
+      <DirectionsPicker 
+        isOpen={isDirectionsOpen}
+        onClose={() => setIsDirectionsOpen(false)}
+        location={restaurant.location}
+        name={restaurant.name}
+      />
     </AnimatePresence>
   );
 }
