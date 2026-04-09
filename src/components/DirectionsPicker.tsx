@@ -17,6 +17,14 @@ export default function DirectionsPicker({ isOpen, onClose, location, name }: Di
   const isAndroid = /Android/.test(navigator.userAgent);
 
   const apps = {
+    system: {
+      id: 'system',
+      name: t('systemDefault'),
+      url: isIOS 
+        ? `maps://?daddr=${location.lat},${location.lng}&q=${encodeURIComponent(name)}`
+        : `geo:${location.lat},${location.lng}?q=${location.lat},${location.lng}(${encodeURIComponent(name)})`,
+      icon: 'https://cdn-icons-png.flaticon.com/512/854/854878.png' // Generic map icon
+    },
     google: {
       id: 'google',
       name: t('openInGoogleMaps'),
@@ -39,8 +47,8 @@ export default function DirectionsPicker({ isOpen, onClose, location, name }: Di
   };
 
   const mapApps = isIOS 
-    ? [apps.yandex, apps.apple] 
-    : [apps.google, apps.yandex];
+    ? [apps.system, apps.yandex, apps.apple] 
+    : [apps.system, apps.google, apps.yandex];
 
   const handleOpenApp = (app: any) => {
     const start = Date.now();
