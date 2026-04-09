@@ -34,6 +34,8 @@ export interface Restaurant {
       displayName?: string;
     }
   };
+  isSponsored?: boolean;
+  isVerified?: boolean;
 }
 
 export interface Review {

@@ -10,10 +10,12 @@ import StatsBar from './components/StatsBar';
 import MapContainer from './components/MapContainer';
 import RestaurantList from './components/RestaurantList';
 import AddRestaurantModal from './components/AddRestaurantModal';
+import AdminDashboard from './components/AdminDashboard';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AuthProvider, useAuth } from './lib/AuthContext';
 
 // Error Boundary Component
 interface ErrorBoundaryProps {
@@ -98,7 +100,17 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   const { t } = useTranslation();
+  const { isAdmin } = useAuth();
+  const [showAdmin, setShowAdmin] = useState(false);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<'food' | 'clothes'>('food');
@@ -138,7 +150,9 @@ export default function App() {
           createdAt: r.created_at,
           dishScore: r.dish_score,
           dishPrices: r.dish_prices,
-          dishStats: r.dish_stats
+          dishStats: r.dish_stats,
+          isSponsored: r.is_sponsored,
+          isVerified: r.is_verified
         }));
         setRestaurants(mappedData as Restaurant[]);
       }
@@ -236,6 +250,11 @@ export default function App() {
 
       return matchesDishes && matchesPrice;
     }).sort((a, b) => {
+      // Priority 1: Sponsored status
+      if (a.isSponsored !== b.isSponsored) {
+        return a.isSponsored ? -1 : 1;
+      }
+
       const getEffectivePrice = (r: Restaurant) => {
         const dishId = (() => {
           if (selectedDishes.length === 0) return null;
@@ -374,6 +393,8 @@ export default function App() {
         description: restData.description,
         submitter: restData.submitter,
         location: restData.location,
+        is_sponsored: false,
+        is_verified: false,
         created_at: new Date().toISOString()
       };
       
@@ -558,10 +579,14 @@ export default function App() {
     }
   };
 
+  if (showAdmin && isAdmin) {
+    return <AdminDashboard onBack={() => setShowAdmin(false)} />;
+  }
+
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-        <Navbar />
+        <Navbar onAdminClick={() => setShowAdmin(true)} />
         
         <main className="flex-1 flex flex-col">
           <FilterBar 

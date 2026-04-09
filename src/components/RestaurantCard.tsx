@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star, MapPin, Navigation, Info } from 'lucide-react';
+import { Star, MapPin, Navigation, Info, CheckCircle2 } from 'lucide-react';
 import { Restaurant } from '../types';
 import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import { motion } from 'motion/react';
@@ -143,7 +143,17 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
               className={`font-black text-gray-900 text-xl leading-tight cursor-pointer hover:${themeText} transition-colors inline-block tracking-tight`}
             >
               {restaurant.name}
+              {restaurant.isVerified && (
+                <CheckCircle2 size={16} className="inline-block ml-1.5 text-blue-500" />
+              )}
             </h3>
+            {restaurant.isSponsored && (
+              <div className="mt-1">
+                <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-md">
+                  Sponsored
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 text-gray-400 text-xs mt-1.5 font-medium">
               <MapPin size={12} className={themeText} />
               <span className="line-clamp-1">{restaurant.address}</span>

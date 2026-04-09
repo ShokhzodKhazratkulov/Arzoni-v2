@@ -1,9 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { MapPin } from 'lucide-react';
+import { MapPin, LogIn, LogOut, ShieldCheck, User } from 'lucide-react';
 import { Language } from '../types';
+import { useAuth } from '../lib/AuthContext';
 
-export default function Navbar() {
+interface NavbarProps {
+  onAdminClick?: () => void;
+}
+
+export default function Navbar({ onAdminClick }: NavbarProps) {
   const { t, i18n } = useTranslation();
+  const { user, isAdmin, signInWithGoogle, signOut } = useAuth();
 
   const changeLanguage = (lng: Language) => {
     i18n.changeLanguage(lng);
@@ -39,11 +45,47 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Language Selector - Right aligned */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0 relative -top-1 right-1 sm:right-2">
-          <div className="hidden md:block text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            {t('communityMap') || "Community Map"}
+        {/* Right side: Admin, Auth, and Language */}
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          {/* Admin Dashboard Link (Visible only to Admin) */}
+          {isAdmin && (
+            <button 
+              onClick={onAdminClick}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-xl border border-amber-100 text-[10px] font-black uppercase tracking-wider hover:bg-amber-100 transition-colors"
+            >
+              <ShieldCheck size={14} />
+              {t('adminDashboard')}
+            </button>
+          )}
+
+          {/* Auth Button */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex flex-col items-end leading-tight">
+                  <span className="text-[10px] font-bold text-gray-900 line-clamp-1">{user.user_metadata?.full_name || user.email}</span>
+                  {isAdmin && <span className="text-[8px] font-black text-amber-600 uppercase tracking-tighter">Admin</span>}
+                </div>
+                <button 
+                  onClick={() => signOut()}
+                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                  title={t('logout')}
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => signInWithGoogle()}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-wider hover:bg-gray-100 transition-colors"
+              >
+                <LogIn size={14} />
+                <span className="hidden sm:inline">{t('login')}</span>
+              </button>
+            )}
           </div>
+
+          {/* Language Selector */}
           <div className="flex items-center gap-1 bg-gray-50 p-0.5 rounded-full border border-gray-200">
             <button
               onClick={() => changeLanguage('uz')}

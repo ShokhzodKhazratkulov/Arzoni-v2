@@ -51,7 +51,9 @@ const SAMPLE_RESTAURANTS = [
       "osh": { avgPrice: 28000, reviewCount: 1100, bestComment: "Eng mazali palov shu yerda! Go'shti yumshoq va seryog'." },
       "shorva": { avgPrice: 22000, reviewCount: 100, bestComment: "Issiq va mazali shorva, ayniqsa qishda juda ketadi." },
       "somsa": { avgPrice: 8000, reviewCount: 50, bestComment: "Tandir somsa juda mazali, ichi sershira." }
-    }
+    },
+    isSponsored: true,
+    isVerified: true
   },
   {
     name: "Somsa Saroyi",
@@ -207,6 +209,8 @@ export async function seedDatabase() {
           dislikes: restaurant.dislikes,
           dish_score: restaurant.dishScore,
           dish_stats: restaurant.dishStats,
+          is_sponsored: (restaurant as any).isSponsored || false,
+          is_verified: (restaurant as any).isVerified || false,
           created_at: new Date().toISOString()
         };
 

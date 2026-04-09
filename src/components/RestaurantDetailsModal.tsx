@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Star, MapPin, Navigation, User, ThumbsUp, ThumbsDown, MoreVertical, Edit2, Camera, Check, X as CloseIcon } from 'lucide-react';
+import { X, Star, MapPin, Navigation, User, ThumbsUp, ThumbsDown, MoreVertical, Edit2, Camera, Check, X as CloseIcon, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Restaurant, Review } from '../types';
 import { supabase } from '../supabase';
@@ -402,7 +402,17 @@ export default function RestaurantDetailsModal({
                     </button>
                   </div>
                 ) : (
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 drop-shadow-md">{restaurant.name}</h2>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-md">{restaurant.name}</h2>
+                    {restaurant.isVerified && (
+                      <CheckCircle2 size={24} className="text-blue-400 drop-shadow-md" />
+                    )}
+                    {restaurant.isSponsored && (
+                      <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-amber-500 text-white rounded-md shadow-sm">
+                        Sponsored
+                      </span>
+                    )}
+                  </div>
                 )}
                 <div className="flex items-center gap-2 text-white/90 text-sm drop-shadow-sm">
                   <MapPin size={14} />
