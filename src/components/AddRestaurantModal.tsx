@@ -217,6 +217,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
       
       onAddReview(selectedRestaurant.id, {
         ...reviewData,
+        submitter: reviewData.submitter.trim() || 'Anonymous',
         dishId: finalDishId,
         restaurantId: selectedRestaurant.id,
         photoFile: photoFile, // Pass the file object
@@ -227,6 +228,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
     } else {
       onSubmit({
         ...formData,
+        submitter: formData.submitter.trim() || 'Anonymous',
         category: selectedCategory,
         name: formData.name || searchTerm,
         rating: 0,
@@ -412,11 +414,11 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
         <div className="space-y-1">
           <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('formSubmitter')}</label>
           <input
-            required
             type="text"
             value={reviewData.submitter}
             onChange={(e) => setReviewData({ ...reviewData, submitter: e.target.value })}
             className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
+            placeholder={t('anonymous') || "Anonymous"}
           />
         </div>
         <div className="space-y-1">
@@ -620,6 +622,7 @@ export default function AddRestaurantModal({ isOpen, onClose, onSubmit, onAddRev
             value={formData.submitter}
             onChange={(e) => setFormData({ ...formData, submitter: e.target.value })}
             className={`w-full px-4 py-2 border border-gray-200 rounded-xl ${themeRing} focus:outline-none`}
+            placeholder={t('anonymous') || "Anonymous"}
           />
         </div>
       </div>

@@ -353,7 +353,7 @@ export default function RestaurantDetailsModal({
                             setIsEditingName(true);
                             setIsMenuOpen(false);
                           }}
-                          className="w-full px-4 py-3 text-left text-sm font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          className="w-full px-4 py-3 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                         >
                           <Edit2 size={14} className={themeText} />
                           Edit name
@@ -363,7 +363,7 @@ export default function RestaurantDetailsModal({
                             e.stopPropagation();
                             fileInputRef.current?.click();
                           }}
-                          className="w-full px-4 py-3 text-left text-sm font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors border-t border-gray-50"
+                          className="w-full px-4 py-3 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors border-t border-gray-50"
                         >
                           <Camera size={14} className={themeText} />
                           Edit photo
@@ -419,56 +419,88 @@ export default function RestaurantDetailsModal({
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             {/* Info Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">{t('price')}</p>
-                <p className="text-base font-black text-gray-900">
-                  {Math.round(selectedDishes.length === 1 && restaurant.dishStats?.[selectedDishes[0]] 
-                    ? restaurant.dishStats[selectedDishes[0]].avgPrice 
-                    : restaurant.price).toLocaleString()} {t('som')}
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{t('price')}</p>
+                <p className={`text-sm font-black ${(() => {
+                  const activeDishId = (() => {
+                    if (selectedDishes.length === 0) return null;
+                    if (selectedDishes.includes('custom') && customDish) {
+                      const normalizedSearch = customDish.toLowerCase();
+                      const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+                      return matchingKey || customDish;
+                    }
+                    const foundId = selectedDishes.find(id => {
+                      const normalizedId = id.toLowerCase();
+                      const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+                      return matchingKey && restaurant.dishStats[matchingKey]?.bestComment;
+                    });
+                    if (foundId) {
+                      const normalizedId = foundId.toLowerCase();
+                      return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+                    }
+                    const firstId = selectedDishes[0];
+                    const normalizedFirstId = firstId.toLowerCase();
+                    return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
+                  })();
+
+                  const p = Math.round(activeDishId && restaurant.dishStats?.[activeDishId] 
+                    ? restaurant.dishStats[activeDishId].avgPrice 
+                    : (restaurant.avgPrice || restaurant.price));
+                  if (selectedCategory === 'clothes') {
+                    if (p < 100000) return 'text-green-600';
+                    if (p <= 170000) return 'text-amber-600';
+                    return 'text-red-600';
+                  }
+                  if (p < 40000) return 'text-green-600';
+                  if (p <= 70000) return 'text-amber-600';
+                  return 'text-red-600';
+                })()}`}>
+                  {(() => {
+                    const activeDishId = (() => {
+                      if (selectedDishes.length === 0) return null;
+                      if (selectedDishes.includes('custom') && customDish) {
+                        const normalizedSearch = customDish.toLowerCase();
+                        const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+                        return matchingKey || customDish;
+                      }
+                      const foundId = selectedDishes.find(id => {
+                        const normalizedId = id.toLowerCase();
+                        const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+                        return matchingKey && restaurant.dishStats[matchingKey]?.bestComment;
+                      });
+                      if (foundId) {
+                        const normalizedId = foundId.toLowerCase();
+                        return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+                      }
+                      const firstId = selectedDishes[0];
+                      const normalizedFirstId = firstId.toLowerCase();
+                      return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
+                    })();
+
+                    return Math.round(activeDishId && restaurant.dishStats?.[activeDishId] 
+                      ? restaurant.dishStats[activeDishId].avgPrice 
+                      : (restaurant.avgPrice || restaurant.price)).toLocaleString();
+                  })()} {t('som')}
                 </p>
-                {restaurant.avgPrice && Math.round(restaurant.avgPrice) !== Math.round(restaurant.price) && (
-                  <p className={`text-[11px] ${themeText} font-bold mt-0.5`}>
-                    Avg: {Math.round(restaurant.avgPrice).toLocaleString()}
-                  </p>
-                )}
               </div>
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">{t('rating')}</p>
-                <div className="flex items-center gap-1">
-                  <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                  <p className="text-base font-bold text-gray-900">{restaurant.rating.toFixed(1)}</p>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">{t('reviews')}</p>
-                <p className="text-base font-bold text-gray-900">{restaurant.reviewCount}</p>
-              </div>
-              <div className="bg-green-50 p-3 rounded-xl border border-green-100">
-                <p className="text-xs text-green-600 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <ThumbsUp size={12} /> Likes
-                </p>
-                <p className="text-base font-bold text-green-700">{restaurant.likes || 0}</p>
-              </div>
-              <div className="bg-red-50 p-3 rounded-xl border border-red-100">
-                <p className="text-xs text-red-600 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <ThumbsDown size={12} /> Dislikes
-                </p>
-                <p className="text-base font-bold text-red-700">{restaurant.dislikes || 0}</p>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{t('reviews')}</p>
+                <p className="text-sm font-bold text-gray-900">{restaurant.reviewCount}</p>
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <h3 className="text-base font-bold text-gray-900 mb-2 uppercase tracking-wider">{t('about')}</h3>
-              <p className="text-gray-600 text-base leading-relaxed italic">
+              <h3 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wider">{t('about')}</h3>
+              <p className="text-gray-600 leading-relaxed italic">
                 "{restaurant.description}"
               </p>
             </div>
 
             {/* Dishes */}
             <div>
-              <h3 className="text-base font-bold text-gray-900 mb-3 uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">
                 {selectedCategory === 'food' ? t('popularDishes') : t('popularDishesClothes')}
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -481,7 +513,7 @@ export default function RestaurantDetailsModal({
                   return (
                     <span 
                       key={dishId} 
-                      className={`px-3 py-1 rounded-full text-sm font-bold transition-colors ${
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                         isSelected 
                           ? `${themeBg} text-white shadow-sm` 
                           : `${themeBgLight} ${themeText}`
@@ -499,16 +531,11 @@ export default function RestaurantDetailsModal({
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">{t('communityReviews')}</h3>
-                  <div className={`flex items-center gap-1 ${themeText} text-sm font-bold mt-1`}>
-                    <Star size={16} className={`fill-[${themeColor}]`} />
-                    <span>{restaurant.rating.toFixed(1)} / 5</span>
-                  </div>
                 </div>
                 <button
                   onClick={() => onAddReview?.()}
-                  className={`${themeBg} text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md ${themeHover} transition-all flex items-center gap-2`}
+                  className={`${themeBg} text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md ${themeHover} transition-all flex items-center gap-2`}
                 >
-                  <Star size={16} className="fill-white" />
                   {t('addReview')}
                 </button>
               </div>
@@ -533,8 +560,8 @@ export default function RestaurantDetailsModal({
                             <User size={20} />
                           </div>
                           <div>
-                            <p className="text-base font-bold text-gray-900">{review.submitter || t('anonymous')}</p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-sm font-bold text-gray-900">{review.submitter || t('anonymous')}</p>
+                            <p className="text-[10px] text-gray-400">
                               {new Date(review.createdAt).toLocaleDateString()}
                               {review.priceSpent ? ` • ${review.priceSpent.toLocaleString()} ${t('som')}` : ''}
                               {review.dishId && (
@@ -552,10 +579,6 @@ export default function RestaurantDetailsModal({
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-0.5 px-2 py-1 bg-white rounded-lg border border-gray-200 shadow-sm">
-                          <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                          <span className="text-xs font-bold text-gray-900">{review.rating.toFixed(1)}</span>
-                        </div>
                       </div>
                       
                       <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -572,23 +595,6 @@ export default function RestaurantDetailsModal({
                           />
                         </div>
                       )}
-
-                      <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
-                        <button 
-                          onClick={() => review.id && handleReviewReact(review.id, 'likes')}
-                          className="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-green-600 transition-colors"
-                        >
-                          <ThumbsUp size={16} />
-                          <span>{review.likes || 0}</span>
-                        </button>
-                        <button 
-                          onClick={() => review.id && handleReviewReact(review.id, 'dislikes')}
-                          className="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-red-600 transition-colors"
-                        >
-                          <ThumbsDown size={16} />
-                          <span>{review.dislikes || 0}</span>
-                        </button>
-                      </div>
                     </motion.div>
                   ))}
                 </div>

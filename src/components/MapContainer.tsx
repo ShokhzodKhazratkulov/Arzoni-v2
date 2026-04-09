@@ -79,12 +79,12 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
 
   const getPinColor = (price: number) => {
     if (selectedCategory === 'clothes') {
-      if (price <= 50000) return '#6366F1'; // Indigo
-      if (price <= 100000) return '#8B5CF6'; // Violet
-      return '#A855F7'; // Purple
+      if (price < 100000) return '#1D9E75'; // Green
+      if (price <= 170000) return '#F59E0B'; // Amber
+      return '#EF4444'; // Red
     }
-    if (price <= 25000) return '#1D9E75'; // Green
-    if (price <= 35000) return '#F97316'; // Orange
+    if (price < 40000) return '#1D9E75'; // Green
+    if (price <= 70000) return '#F59E0B'; // Amber
     return '#EF4444'; // Red
   };
 
@@ -98,20 +98,54 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
         zoomControl={true}
         gestureHandling={'greedy'}
       >
-        {restaurants.map((restaurant) => (
-          <AdvancedMarker
-            key={restaurant.id}
-            position={restaurant.location}
-            onClick={() => setSelectedId(restaurant.id || null)}
-          >
-            <Pin 
-              background={getPinColor(restaurant.price)} 
-              borderColor={'#ffffff'} 
-              glyphColor={'#ffffff'}
-              scale={1.2}
-            />
-          </AdvancedMarker>
-        ))}
+        {restaurants.map((restaurant) => {
+          // Find the most relevant dish to display info for (same logic as RestaurantCard)
+          const activeDishId = (() => {
+            if (selectedDishes.length === 0) return null;
+            
+            if (selectedDishes.includes('custom') && customDish) {
+              const normalizedSearch = customDish.toLowerCase();
+              const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedSearch);
+              return matchingKey || customDish;
+            }
+            
+            // Find the first selected dish that has a comment, or just the first selected dish
+            // We also need to handle case-insensitivity here for consistency
+            const foundId = selectedDishes.find(id => {
+              const normalizedId = id.toLowerCase();
+              const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+              return matchingKey && restaurant.dishStats[matchingKey]?.bestComment;
+            });
+
+            if (foundId) {
+              const normalizedId = foundId.toLowerCase();
+              return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+            }
+
+            const firstId = selectedDishes[0];
+            const normalizedFirstId = firstId.toLowerCase();
+            return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
+          })();
+
+          const displayPrice = activeDishId && restaurant.dishStats?.[activeDishId] 
+            ? restaurant.dishStats[activeDishId].avgPrice 
+            : (restaurant.avgPrice || restaurant.price);
+
+          return (
+            <AdvancedMarker
+              key={restaurant.id}
+              position={restaurant.location}
+              onClick={() => setSelectedId(restaurant.id || null)}
+            >
+              <Pin 
+                background={getPinColor(displayPrice)} 
+                borderColor={'#ffffff'} 
+                glyphColor={'#ffffff'}
+                scale={1.2}
+              />
+            </AdvancedMarker>
+          );
+        })}
 
         {userLocation && (
           <AdvancedMarker position={userLocation}>

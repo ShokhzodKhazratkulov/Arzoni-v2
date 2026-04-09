@@ -11,7 +11,7 @@ export default function StatsBar({ restaurants, selectedCategory }: StatsBarProp
 
   const totalCount = restaurants.length;
   const cheapestPrice = restaurants.length > 0 
-    ? Math.min(...restaurants.map(r => r.price)) 
+    ? Math.min(...restaurants.map(r => r.avgPrice || r.price)) 
     : 0;
 
   return (
@@ -27,7 +27,18 @@ export default function StatsBar({ restaurants, selectedCategory }: StatsBarProp
           <span className="opacity-60">
             {selectedCategory === 'food' ? t('cheapestMeal') : t('cheapestClothes')}:
           </span>
-          <span className="text-gray-900">{cheapestPrice.toLocaleString()} {t('som')}</span>
+          <span className={`font-black ${(() => {
+            if (selectedCategory === 'clothes') {
+              if (cheapestPrice < 100000) return 'text-green-600';
+              if (cheapestPrice <= 170000) return 'text-amber-600';
+              return 'text-red-600';
+            }
+            if (cheapestPrice < 40000) return 'text-green-600';
+            if (cheapestPrice <= 70000) return 'text-amber-600';
+            return 'text-red-600';
+          })()}`}>
+            {cheapestPrice.toLocaleString()} {t('som')}
+          </span>
         </div>
       </div>
     </div>

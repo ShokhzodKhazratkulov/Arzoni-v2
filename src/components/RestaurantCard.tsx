@@ -21,12 +21,12 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
 
   const getPriceColor = (price: number) => {
     if (selectedCategory === 'clothes') {
-      if (price <= 50000) return 'text-indigo-600 bg-indigo-50 border-indigo-100';
-      if (price <= 100000) return 'text-violet-600 bg-violet-50 border-violet-100';
-      return 'text-purple-600 bg-purple-50 border-purple-100';
+      if (price < 100000) return 'text-green-600 bg-green-50 border-green-100';
+      if (price <= 170000) return 'text-amber-600 bg-amber-50 border-amber-100';
+      return 'text-red-600 bg-red-50 border-red-100';
     }
-    if (price <= 25000) return 'text-green-600 bg-green-50 border-green-100';
-    if (price <= 35000) return 'text-orange-600 bg-orange-50 border-orange-100';
+    if (price < 40000) return 'text-green-600 bg-green-50 border-green-100';
+    if (price <= 70000) return 'text-amber-600 bg-amber-50 border-amber-100';
     return 'text-red-600 bg-red-50 border-red-100';
   };
 
@@ -50,12 +50,25 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
     }
     
     // Otherwise find the first selected dish that has a comment
-    return selectedDishes.find(id => restaurant.dishStats?.[id]?.bestComment) || selectedDishes[0];
+    const foundId = selectedDishes.find(id => {
+      const normalizedId = id.toLowerCase();
+      const matchingKey = Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId);
+      return matchingKey && restaurant.dishStats[matchingKey]?.bestComment;
+    });
+
+    if (foundId) {
+      const normalizedId = foundId.toLowerCase();
+      return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedId) || foundId;
+    }
+
+    const firstId = selectedDishes[0];
+    const normalizedFirstId = firstId.toLowerCase();
+    return Object.keys(restaurant.dishStats || {}).find(k => k.toLowerCase() === normalizedFirstId) || firstId;
   }, [selectedDishes, customDish, restaurant.dishStats]);
 
   const displayPrice = activeDishId && restaurant.dishStats?.[activeDishId] 
     ? restaurant.dishStats[activeDishId].avgPrice 
-    : restaurant.price;
+    : (restaurant.avgPrice || restaurant.price);
 
   const displayDescription = activeDishId && restaurant.dishStats?.[activeDishId]?.bestComment
     ? `"${restaurant.dishStats[activeDishId].bestComment}"`
