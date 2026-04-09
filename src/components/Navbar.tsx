@@ -20,16 +20,16 @@ export default function Navbar() {
           <div className="flex flex-col">
             <div className="flex items-center">
               <div className="flex flex-col items-center mr-2 leading-none">
-                <span className="text-[8px] font-bold text-gray-900 leading-none">{t('categoryFood')}</span>
+                <span className="text-[10px] font-bold text-gray-900 leading-none">{t('categoryFood')}</span>
                 <div className="w-full border-t border-gray-900 my-px" />
-                <span className="text-[8px] font-bold text-gray-900 leading-none">{t('categoryClothes')}</span>
+                <span className="text-[10px] font-bold text-gray-900 leading-none">{t('categoryClothes')}</span>
               </div>
-              <h1 className="text-2xl font-black text-gray-900 leading-none tracking-tighter">
+              <h1 className="text-[26px] font-black text-gray-900 leading-none tracking-tighter">
                 {t('appName')}
               </h1>
             </div>
             {/* Tagline */}
-            <div className="flex items-center gap-1 text-[10px] text-gray-500 font-medium mt-0.5">
+            <div className="flex items-center gap-1 text-[11px] text-gray-500 font-medium mt-0.5">
               <span className="whitespace-nowrap">{t('taglinePart1')}</span>
               <span className="font-bold text-gray-700">
                 {t('foodItem')}/{t('clothesItem')}

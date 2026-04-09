@@ -531,6 +531,10 @@ export default function RestaurantDetailsModal({
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">{t('communityReviews')}</h3>
+                  <div className={`flex items-center gap-1 ${themeText} text-sm font-bold mt-1`}>
+                    <Star size={16} className={`fill-[${themeColor}]`} />
+                    <span>{restaurant.rating.toFixed(1)} / 5</span>
+                  </div>
                 </div>
                 <button
                   onClick={() => onAddReview?.()}
@@ -579,6 +583,10 @@ export default function RestaurantDetailsModal({
                             </p>
                           </div>
                         </div>
+                        <div className="flex items-center gap-0.5 px-2 py-1 bg-white rounded-lg border border-gray-200 shadow-sm">
+                          <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                          <span className="text-xs font-bold text-gray-900">{review.rating.toFixed(1)}</span>
+                        </div>
                       </div>
                       
                       <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -595,6 +603,23 @@ export default function RestaurantDetailsModal({
                           />
                         </div>
                       )}
+
+                      <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+                        <button 
+                          onClick={() => review.id && handleReviewReact(review.id, 'likes')}
+                          className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-green-600 transition-colors"
+                        >
+                          <ThumbsUp size={14} />
+                          <span>{review.likes || 0}</span>
+                        </button>
+                        <button 
+                          onClick={() => review.id && handleReviewReact(review.id, 'dislikes')}
+                          className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                        >
+                          <ThumbsDown size={14} />
+                          <span>{review.dislikes || 0}</span>
+                        </button>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
