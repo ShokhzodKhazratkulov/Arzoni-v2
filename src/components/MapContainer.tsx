@@ -13,6 +13,7 @@ import { TASHKENT_CENTER, DISH_TYPES } from '../constants';
 import { Navigation, Star, MapPin, Crosshair, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import RestaurantDetailsModal from './RestaurantDetailsModal';
+import DirectionsPicker from './DirectionsPicker';
 
 interface MapContainerProps {
   restaurants: Restaurant[];
@@ -28,6 +29,7 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   const selectedRestaurant = restaurants.find(r => r.id === selectedId);
 
@@ -195,10 +197,12 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
                   onClick={() => {
                     if (selectedRestaurant) {
                       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                      const url = isIOS 
-                        ? `maps://?daddr=${selectedRestaurant.location.lat},${selectedRestaurant.location.lng}&q=${encodeURIComponent(selectedRestaurant.name)}`
-                        : `geo:${selectedRestaurant.location.lat},${selectedRestaurant.location.lng}?q=${selectedRestaurant.location.lat},${selectedRestaurant.location.lng}(${encodeURIComponent(selectedRestaurant.name)})`;
-                      window.location.href = url;
+                      if (isIOS) {
+                        setIsDirectionsOpen(true);
+                      } else {
+                        const url = `geo:${selectedRestaurant.location.lat},${selectedRestaurant.location.lng}?q=${selectedRestaurant.location.lat},${selectedRestaurant.location.lng}(${encodeURIComponent(selectedRestaurant.name)})`;
+                        window.location.href = url;
+                      }
                     }
                   }}
                   className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1"
@@ -239,6 +243,15 @@ const MapContent = ({ restaurants, onAddRestaurant, selectedDishes = [], customD
           selectedDishes={selectedDishes}
           customDish={customDish}
           selectedCategory={selectedCategory}
+        />
+      )}
+
+      {selectedRestaurant && (
+        <DirectionsPicker 
+          isOpen={isDirectionsOpen}
+          onClose={() => setIsDirectionsOpen(false)}
+          location={selectedRestaurant.location}
+          name={selectedRestaurant.name}
         />
       )}
     </div>

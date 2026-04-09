@@ -5,6 +5,7 @@ import { Restaurant } from '../types';
 import { DISH_TYPES, CLOTHING_TYPES } from '../constants';
 import { motion } from 'motion/react';
 import RestaurantDetailsModal from './RestaurantDetailsModal';
+import DirectionsPicker from './DirectionsPicker';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -18,6 +19,7 @@ interface RestaurantCardProps {
 export default function RestaurantCard({ restaurant, onAddReview, selectedDishes = [], customDish, selectedCategory }: RestaurantCardProps) {
   const { t } = useTranslation();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   const getPriceColor = (price: number) => {
     if (selectedCategory === 'clothes') {
@@ -213,10 +215,12 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
             onClick={(e) => {
               e.stopPropagation();
               const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-              const url = isIOS 
-                ? `maps://?daddr=${restaurant.location.lat},${restaurant.location.lng}&q=${encodeURIComponent(restaurant.name)}`
-                : `geo:${restaurant.location.lat},${restaurant.location.lng}?q=${restaurant.location.lat},${restaurant.location.lng}(${encodeURIComponent(restaurant.name)})`;
-              window.location.href = url;
+              if (isIOS) {
+                setIsDirectionsOpen(true);
+              } else {
+                const url = `geo:${restaurant.location.lat},${restaurant.location.lng}?q=${restaurant.location.lat},${restaurant.location.lng}(${encodeURIComponent(restaurant.name)})`;
+                window.location.href = url;
+              }
             }}
             className={`flex flex-col items-center gap-0.5 ${themeText} hover:opacity-80 transition-opacity`}
           >
@@ -225,6 +229,13 @@ export default function RestaurantCard({ restaurant, onAddReview, selectedDishes
           </button>
         </div>
       </motion.div>
+
+      <DirectionsPicker 
+        isOpen={isDirectionsOpen}
+        onClose={() => setIsDirectionsOpen(false)}
+        location={restaurant.location}
+        name={restaurant.name}
+      />
 
       <RestaurantDetailsModal 
         isOpen={isDetailsOpen}
